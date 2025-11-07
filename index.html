@@ -338,7 +338,7 @@
             border-color: var(--accent-green);
         }
         
-        #bao-cao-ket-qua {
+        #bao-cao-ket-qua, #bao-cao-cu-ket-qua {
             white-space: pre-wrap;
             font-family: 'Courier New', Courier, monospace;
             font-size: 0.9rem;
@@ -452,7 +452,10 @@
             <div class="col-lg-6">
                 <div class="d-flex justify-content-between align-items-center mb-1">
                     <h3 class="mb-0 fs-5">1. Danh sách FOS</h3>
-                    <i class="bi bi-plus-circle-fill add-fos-icon-btn" title="Thêm FOS mới" data-bs-toggle="modal" data-bs-target="#themFosModal"></i>
+                    <div>
+                        <i class="bi bi-clipboard2-plus-fill add-fos-icon-btn me-2" title="Dán nhiều báo cáo" data-bs-toggle="modal" data-bs-target="#danNhieuBaoCaoModal"></i>
+                        <i class="bi bi-plus-circle-fill add-fos-icon-btn" title="Thêm FOS mới" data-bs-toggle="modal" data-bs-target="#themFosModal"></i>
+                    </div>
                 </div>
                 <p class="fst-italic small mb-2" style="color: var(--text-secondary);">Lưu ý: Nhân viên không nhập báo cáo sẽ mặc định là active với kết quả trong ngày bằng 0.</p>
 
@@ -470,10 +473,18 @@
                 <div class="card">
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-center mb-2">
-                            <h5 class="card-title mb-0">Báo cáo tổng hợp</h5>
-                            <button id="sao-chep-btn" class="btn btn-sm btn-primary">
-                                <i class="bi bi-clipboard"></i> Sao chép
-                            </button>
+                             <h5 class="card-title mb-0">
+                                Báo cáo tổng hợp
+                                <i id="mtd-warning-icon" class="bi bi-exclamation-triangle-fill text-danger ms-2" style="display: none; cursor: pointer;" title="Cảnh báo sai MTD" data-bs-toggle="modal" data-bs-target="#mtdCanhBaoModal"></i>
+                            </h5>
+                            <div>
+                                <button id="xem-bao-cao-cu-btn" class="btn btn-sm btn-outline-secondary me-2" disabled>
+                                    <i class="bi bi-calendar-check"></i> Xem hôm qua
+                                </button>
+                                <button id="sao-chep-btn" class="btn btn-sm btn-primary">
+                                    <i class="bi bi-clipboard"></i> Sao chép
+                                </button>
+                            </div>
                         </div>
                         <textarea id="bao-cao-ket-qua" class="form-control" rows="8" readonly></textarea>
                     </div>
@@ -601,6 +612,85 @@
         </div>
       </div>
     </div>
+    
+    <!-- Modal Dán Nhiều Báo Cáo -->
+    <div class="modal fade" id="danNhieuBaoCaoModal" tabindex="-1" aria-labelledby="danNhieuBaoCaoModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h1 class="modal-title fs-5" id="danNhieuBaoCaoModalLabel">Xử lý báo cáo hàng loạt</h1>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <p>Dán toàn bộ nội dung báo cáo của các FOS vào đây. Hệ thống sẽ tự động tách và cập nhật cho từng người.</p>
+            <textarea id="noi-dung-nhieu-bao-cao-modal" class="form-control" rows="15" placeholder="Ví dụ:
+Fos Toàn báo cáo ngày...
+...
+Fos Giang báo cáo ngày...
+..."></textarea>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+            <button type="button" class="btn btn-primary" id="xu-ly-nhieu-bao-cao-btn">Xử lý</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Xác Nhận Xoá -->
+    <div class="modal fade" id="xacNhanXoaModal" tabindex="-1" aria-labelledby="xacNhanXoaModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h1 class="modal-title fs-5" id="xacNhanXoaModalLabel">Xác nhận Xoá</h1>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            Bạn có chắc chắn muốn xoá FOS này không?
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Huỷ</button>
+            <button type="button" class="btn btn-danger" id="xac-nhan-xoa-btn">Xoá</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Xem Báo Cáo Cũ -->
+    <div class="modal fade" id="xemBaoCaoCuModal" tabindex="-1" aria-labelledby="xemBaoCaoCuModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h1 class="modal-title fs-5" id="xemBaoCaoCuModalLabel">Báo cáo tổng hợp hôm qua</h1>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+             <textarea id="bao-cao-cu-ket-qua" class="form-control" rows="12" readonly></textarea>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Cảnh Báo MTD -->
+    <div class="modal fade" id="mtdCanhBaoModal" tabindex="-1" aria-labelledby="mtdCanhBaoModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h1 class="modal-title fs-5" id="mtdCanhBaoModalLabel"><i class="bi bi-exclamation-triangle-fill text-danger me-2"></i>Cảnh báo sai MTD</h1>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div id="mtd-warning-list" class="modal-body">
+            <!-- Danh sách lỗi sẽ được chèn vào đây -->
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đã hiểu</button>
+          </div>
+        </div>
+      </div>
+    </div>
 
 
     <!-- jQuery -->
@@ -685,12 +775,23 @@
             ];
             
             let fosHienTai = null;
+            let fosCanXoa = null;
             
             const $fosListArea = $('#fos-list-area');
             const themFosModal = new bootstrap.Modal('#themFosModal');
             const danBaoCaoModal = new bootstrap.Modal('#danBaoCaoModal');
             const suaBaoCaoModal = new bootstrap.Modal('#suaBaoCaoModal');
+            const danNhieuBaoCaoModal = new bootstrap.Modal('#danNhieuBaoCaoModal');
+            const xacNhanXoaModal = new bootstrap.Modal('#xacNhanXoaModal');
+            const xemBaoCaoCuModal = new bootstrap.Modal('#xemBaoCaoCuModal');
+            const mtdCanhBaoModal = new bootstrap.Modal('#mtdCanhBaoModal');
             const danBaoCaoModalEl = document.getElementById('danBaoCaoModal');
+            
+            const capNhatNutTaoBaoCao = () => {
+                const daBaoCao = danhSachFOS.filter(fos => fos.trangThai !== 'Chưa báo cáo').length;
+                const tongSo = danhSachFOS.length;
+                $('#tao-bao-cao-btn').html(`Tạo Báo Cáo Tổng Hợp (${daBaoCao}/${tongSo})`);
+            };
 
             const veLaiDanhSachFOS = () => {
                 let html = '<div class="row g-2">';
@@ -722,6 +823,7 @@
                 });
                 html += '</div>';
                 $fosListArea.html(html);
+                capNhatNutTaoBaoCao();
             };
 
             const dinhDangNgay = (date) => {
@@ -730,6 +832,14 @@
                  const thang = String(d.getMonth() + 1).padStart(2, '0');
                  const nam = d.getFullYear();
                  return `${ngay}/${thang}/${nam}`;
+            };
+            
+             const dinhDangNgayISO = (date) => {
+                const d = new Date(date);
+                const nam = d.getFullYear();
+                const thang = String(d.getMonth() + 1).padStart(2, '0');
+                const ngay = String(d.getDate()).padStart(2, '0');
+                return `${nam}-${thang}-${ngay}`;
             };
             
             const layGiaTri = (noiDung, tuKhoa) => {
@@ -745,14 +855,171 @@
             
             const kiemTraTenNhanVien = (fosData, noiDungBaoCao) => {
                 if (!noiDungBaoCao.trim()) {
-                    fosData.kiemTraTen = null; // Nếu báo cáo trống, không kiểm tra, reset trạng thái
+                    fosData.kiemTraTen = null; // Reset status if report is empty
                     return;
                 }
                 const tenDaEscape = fosData.ten.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
-                // Kiểm tra tên ở đầu chuỗi, có thể có chữ "Fos" đằng trước, không phân biệt hoa thường
-                const regex = new RegExp(`^(fos\\s+)?${tenDaEscape}\\b`, 'i');
+                // Use a positive lookahead for a whitespace character or end of string,
+                // which is more reliable for Unicode characters than \b (word boundary).
+                const regex = new RegExp(`^(fos\\s+)?${tenDaEscape}(?=\\s|$)`, 'i');
                 
                 fosData.kiemTraTen = regex.test(noiDungBaoCao.trim());
+            };
+            
+            const luuBaoCao = (reportText, fosList) => {
+                const homNayISO = dinhDangNgayISO(new Date());
+                const key = `report_${homNayISO}`;
+
+                // Deep copy and add extracted MTD value for easier comparison later
+                const fosDataToStore = JSON.parse(JSON.stringify(fosList)); 
+                fosDataToStore.forEach(fos => {
+                    fos.mtdMC = layGiaTri(fos.baoCao, 'MTD MC');
+                });
+
+                const data = {
+                    reportText: reportText,
+                    fosData: fosDataToStore
+                };
+                
+                try {
+                    localStorage.setItem(key, JSON.stringify(data));
+                    console.log(`Báo cáo ngày ${homNayISO} đã được lưu vào localStorage.`);
+                } catch (e) {
+                    console.error("Lỗi khi lưu báo cáo:", e);
+                    alert("Không thể lưu báo cáo. Bộ nhớ cục bộ có thể đã đầy.");
+                }
+            };
+            
+            const taiBaoCaoHomQua = () => {
+                const homQua = new Date();
+                homQua.setDate(homQua.getDate() - 1);
+                const homQuaISO = dinhDangNgayISO(homQua);
+                const key = `report_${homQuaISO}`;
+                
+                const dataString = localStorage.getItem(key);
+                if (dataString) {
+                    try {
+                        return JSON.parse(dataString);
+                    } catch (e) {
+                        console.error("Lỗi khi đọc báo cáo hôm qua:", e);
+                        return null;
+                    }
+                }
+                return null;
+            };
+
+            const kiemTraMTD = () => {
+                // Hide icon by default
+                $('#mtd-warning-icon').hide();
+                
+                const baoCaoHomQua = taiBaoCaoHomQua();
+                if (!baoCaoHomQua || !baoCaoHomQua.fosData) {
+                    console.log("Không tìm thấy báo cáo hôm qua để so sánh MTD.");
+                    return;
+                }
+                
+                const danhSachLoi = [];
+                const fosDataHomQuaMap = new Map(baoCaoHomQua.fosData.map(fos => [fos.ten, fos]));
+
+                danhSachFOS.forEach(fosHienTai => {
+                    const fosHomQua = fosDataHomQuaMap.get(fosHienTai.ten);
+                    if (!fosHomQua) return; // FOS mới, không so sánh
+
+                    const mtdHomQua = fosHomQua.mtdMC || 0;
+                    const mcHomNay = layGiaTri(fosHienTai.baoCao, 'Tổng MC');
+                    const mtdHomNay = layGiaTri(fosHienTai.baoCao, 'MTD MC');
+
+                    if (fosHienTai.trangThai === 'Off') {
+                        if (mtdHomNay !== mtdHomQua) {
+                            danhSachLoi.push({
+                                ten: fosHienTai.ten,
+                                lyDo: `Trạng thái OFF nhưng MTD thay đổi.`,
+                                chiTiet: `Hôm qua: ${mtdHomQua}, Hôm nay: ${mtdHomNay}`
+                            });
+                        }
+                    } else { // Active or not reported (assumed active)
+                        const mtdDuKien = mtdHomQua + mcHomNay;
+                        if (mtdHomNay !== mtdDuKien) {
+                            danhSachLoi.push({
+                                ten: fosHienTai.ten,
+                                lyDo: `Cộng dồn MTD không chính xác.`,
+                                chiTiet: `Dự kiến: ${mtdHomQua} (hôm qua) + ${mcHomNay} (hôm nay) = ${mtdDuKien}. Thực tế: ${mtdHomNay}`
+                            });
+                        }
+                    }
+                });
+
+                if (danhSachLoi.length > 0) {
+                    let htmlLoi = '<p>Phát hiện các sai sót trong dữ liệu MTD so với ngày hôm trước:</p><ul class="list-group">';
+                    danhSachLoi.forEach(loi => {
+                        htmlLoi += `
+                            <li class="list-group-item">
+                                <div class="fw-bold">${loi.ten}</div>
+                                <small>${loi.lyDo}</small>
+                                <div class="text-muted" style="font-size: 0.8em;">${loi.chiTiet}</div>
+                            </li>
+                        `;
+                    });
+                    htmlLoi += '</ul>';
+                    
+                    $('#mtd-warning-list').html(htmlLoi);
+                    $('#mtd-warning-icon').show();
+                }
+            };
+
+            const xuLyBaoCaoHangLoat = () => {
+                const bulkText = $('#noi-dung-nhieu-bao-cao-modal').val().trim();
+                if (!bulkText) {
+                    alert('Vui lòng dán nội dung báo cáo.');
+                    return;
+                }
+
+                const reportBlocks = bulkText.split(/(?=^Fos\s)/im); 
+
+                let successCount = 0;
+                let notFoundNames = [];
+                const updatedFosNames = new Set();
+
+                reportBlocks.forEach(block => {
+                    const trimmedBlock = block.trim();
+                    if (trimmedBlock.length === 0) return;
+
+                    const nameMatch = trimmedBlock.match(/^Fos\s+([^\s]+)/i);
+                    const reportFosName = nameMatch ? nameMatch[1] : null;
+
+                    let foundFos = null;
+
+                    foundFos = danhSachFOS.find(fos => {
+                        const escapedFosName = fos.ten.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+                        const fosNameRegex = new RegExp(`^Fos\\s+${escapedFosName}(?=\\s|$)`, 'i');
+                        return fosNameRegex.test(trimmedBlock);
+                    });
+                    
+                    if (foundFos) {
+                        foundFos.baoCao = trimmedBlock;
+                        foundFos.trangThai = 'Đã báo cáo';
+                        kiemTraTenNhanVien(foundFos, trimmedBlock);
+                        
+                        if (!updatedFosNames.has(foundFos.ten)) {
+                            successCount++;
+                            updatedFosNames.add(foundFos.ten);
+                        }
+                    } else if (reportFosName) {
+                         notFoundNames.push(reportFosName);
+                    }
+                });
+
+                danNhieuBaoCaoModal.hide();
+                veLaiDanhSachFOS();
+
+                let resultMessage = `Xử lý hoàn tất!\n\n- Cập nhật thành công: ${successCount} FOS.`;
+                if (notFoundNames.length > 0) {
+                    const uniqueNotFound = [...new Set(notFoundNames)];
+                    resultMessage += `\n- Không tìm thấy hoặc tên sai: ${uniqueNotFound.join(', ')}.`;
+                }
+                alert(resultMessage);
+                
+                $('#noi-dung-nhieu-bao-cao-modal').val('');
             };
 
 
@@ -807,6 +1074,10 @@
                 baoCaoCuoiCung += chiTietFOS.join('\n');
 
                 $('#bao-cao-ket-qua').val(baoCaoCuoiCung);
+                
+                // --- NEW FEATURES ---
+                luuBaoCao(baoCaoCuoiCung, danhSachFOS);
+                kiemTraMTD();
             };
 
             // --- GÁN SỰ KIỆN ---
@@ -846,9 +1117,18 @@
             });
             
             $fosListArea.on('click', '.delete-fos-btn', function() {
-                const tenFosCanXoa = $(this).data('fos-name');
-                danhSachFOS = danhSachFOS.filter(fos => fos.ten !== tenFosCanXoa);
-                veLaiDanhSachFOS();
+                fosCanXoa = $(this).data('fos-name');
+                $('#xacNhanXoaModal .modal-body').text(`Bạn có chắc chắn muốn xoá FOS "${fosCanXoa}" không? Thao tác này không thể hoàn tác.`);
+                xacNhanXoaModal.show();
+            });
+
+            $('#xac-nhan-xoa-btn').on('click', function() {
+                if (fosCanXoa) {
+                    danhSachFOS = danhSachFOS.filter(fos => fos.ten !== fosCanXoa);
+                    veLaiDanhSachFOS();
+                    fosCanXoa = null; // Reset after deletion
+                }
+                xacNhanXoaModal.hide();
             });
             
             $fosListArea.on('click', '.fos-name-btn', function() {
@@ -927,6 +1207,8 @@
                     suaBaoCaoModal.show();
                 }
             });
+            
+            $('#xu-ly-nhieu-bao-cao-btn').on('click', xuLyBaoCaoHangLoat);
 
             $('#sua-bao-cao-form').on('input', '#ntb-edit-modal, #etb-edit-modal', function() {
                 const ntb = parseInt($('#ntb-edit-modal').val(), 10) || 0;
@@ -997,11 +1279,26 @@
                     }, 2000); 
                 }).catch(err => console.error('Không thể sao chép: ', err));
             });
+            
+             $('#xem-bao-cao-cu-btn').on('click', function() {
+                const baoCaoHomQua = taiBaoCaoHomQua();
+                if (baoCaoHomQua && baoCaoHomQua.reportText) {
+                    $('#bao-cao-cu-ket-qua').val(baoCaoHomQua.reportText);
+                    xemBaoCaoCuModal.show();
+                } else {
+                    alert("Không tìm thấy báo cáo của ngày hôm qua.");
+                }
+            });
 
             // --- CHẠY LẦN ĐẦU ---
             buildThemeMenu();
             initializeTheme();
             veLaiDanhSachFOS();
+
+            // Kích hoạt nút xem báo cáo cũ nếu có dữ liệu
+            if (taiBaoCaoHomQua()) {
+                $('#xem-bao-cao-cu-btn').prop('disabled', false);
+            }
         });
     </script>
 </body>
