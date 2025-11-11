@@ -478,7 +478,7 @@
                                 <i id="mtd-warning-icon" class="bi bi-exclamation-triangle-fill text-danger ms-2" style="display: none; cursor: pointer;" title="Cảnh báo sai MTD" data-bs-toggle="modal" data-bs-target="#mtdCanhBaoModal"></i>
                             </h5>
                             <div>
-                                <button id="xem-bao-cao-cu-btn" class="btn btn-sm btn-outline-secondary me-2" disabled>
+                                <button id="xem-bao-cao-cu-btn" class="btn btn-sm btn-outline-secondary me-2">
                                     <i class="bi bi-calendar-check"></i> Xem hôm qua
                                 </button>
                                 <button id="sao-chep-btn" class="btn btn-sm btn-primary">
@@ -1295,10 +1295,8 @@ Fos Giang báo cáo ngày...
             initializeTheme();
             veLaiDanhSachFOS();
 
-            // Kích hoạt nút xem báo cáo cũ nếu có dữ liệu
-            if (taiBaoCaoHomQua()) {
-                $('#xem-bao-cao-cu-btn').prop('disabled', false);
-            }
+            // Kích hoạt/vô hiệu hóa nút xem báo cáo cũ dựa trên dữ liệu
+            $('#xem-bao-cao-cu-btn').prop('disabled', !taiBaoCaoHomQua());
         });
     </script>
 </body>
