@@ -543,7 +543,7 @@
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
-            <textarea id="noi-dung-bao-cao-modal" class="form-control" rows="6" placeholder="Dữ liệu từ clipboard sẽ được tự động dán vào đây..."></textarea>
+            <textarea id="noi-dung-bao-cao-modal" class="form-control" rows="6" placeholder="Dán nội dung báo cáo vào đây..."></textarea>
           </div>
           <div class="modal-footer justify-content-between">
             <button type="button" class="btn btn-danger" id="danh-dau-off-btn">OFF (Nghỉ)</button>
@@ -1149,24 +1149,8 @@ Fos Giang báo cáo ngày...
             
             danBaoCaoModalEl.addEventListener('shown.bs.modal', () => {
                 const $textArea = $('#noi-dung-bao-cao-modal');
-                
-                // This event fires after the .fos-name-btn click handler has already populated the textarea
-                // with any existing report. We should only paste from clipboard if the report is empty.
-                if ($textArea.val().trim() === '' && navigator.clipboard && navigator.clipboard.readText) {
-                    navigator.clipboard.readText().then(clipText => {
-                        if (clipText) {
-                            $textArea.val(clipText);
-                        }
-                    }).catch(err => {
-                        console.info("Could not auto-paste from clipboard:", err);
-                    }).finally(() => {
-                        // Whether paste succeeded or not, focus and select.
-                        $textArea.focus().select();
-                    });
-                } else {
-                    // If not empty, or no clipboard access, just focus and select.
-                    $textArea.focus().select();
-                }
+                // Always focus and select the content of the textarea when the modal is shown.
+                $textArea.focus().select();
             });
 
             $('#luu-bao-cao-btn').on('click', function() {
