@@ -21,6 +21,8 @@ export const taoCauTrucGuiBaoCao = (danhSachNhanVien, baoCaoLichSu, thongKe) => 
          tongSoETB: thongKe.tongETB,
          NSBQ_ETB: parseFloat(thongKe.nsbqETB),
          tongSoAEPlus: thongKe.tongAEPlus,
+         tongSoTKHKD: thongKe.tongTKHKD,
+         tongSoTShop: thongKe.tongTShop,
          tyLePOS: `${thongKe.tongPosThucHien}/${thongKe.posChiTieu}`,
          tyLeActiveFOS: `${thongKe.activeFOS}/${thongKe.tongFOS}`
      };

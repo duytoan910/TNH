@@ -236,7 +236,7 @@ $(function() {
         hienThiDanhSachNhanVien();
         const quanLy = 'TNH';
         const ngayHienThi = dinhDangNgayHienThi(new Date());
-        let tMC = 0, tNTB = 0, tETB = 0, nvActive = 0, tPos = 0, tAE = 0;
+        let tMC = 0, tNTB = 0, tETB = 0, nvActive = 0, tPos = 0, tAE = 0, tTKHKD = 0, tTShop = 0;
         let dsChiTiet = [];
         const banDoLichSu = new Map();
         if (baoCaoLichSuGanNhat?.duLieuNvLichSu) baoCaoLichSuGanNhat.duLieuNvLichSu.forEach(n => banDoLichSu.set(n.ten, n));
@@ -262,17 +262,19 @@ $(function() {
                 nvActive++;
                 tMC += mcNay; tNTB += ntb; tETB += etb;
                 tPos += trichXuatSoLieu(bc, 'Pos'); tAE += trichXuatSoLieu(bc, ['AE+', 'AE Plus']);
+                tTKHKD += trichXuatSoLieu(bc, ['Tài khoản hộ kinh doanh', 'TK HKD', 'HKD']);
+                tTShop += trichXuatSoLieu(bc, 'TShop');
                 dsChiTiet.push(`${bieuTuong}${nv.ten}: ${mcNay}/${mtd}/${nv.chiTieu}`);
             }
         });
 
         const nsbqNTB = (nvActive > 0) ? (tNTB / nvActive).toFixed(2) : '0.00';
         const nsbqETB = (nvActive > 0) ? (tETB / nvActive).toFixed(2) : '0.00';
-        let ketQua = `${quanLy} ngày ${ngayHienThi}\n🔥${danhSachNhanVien.length} FOS – ${tMC} MC\n✅NTB: ${tNTB}\n✅NSBQ NTB: ${nsbqNTB}\n✅ETB: ${tETB}\n✅NSBQ ETB: ${nsbqETB}\n✅AE+: ${tAE}\n✅Pos: ${tPos}/${danhSachNhanVien.length * 3}\n\n⭐️Active ${nvActive}/${danhSachNhanVien.length}\n${dsChiTiet.join('\n')}`;
+        let ketQua = `${quanLy} ngày ${ngayHienThi}\n🔥${danhSachNhanVien.length} FOS – ${tMC} MC\n✅NTB: ${tNTB}\n✅NSBQ NTB: ${nsbqNTB}\n✅ETB: ${tETB}\n✅NSBQ ETB: ${nsbqETB}\n✅AE+: ${tAE}\n✅Pos: ${tPos}/${danhSachNhanVien.length * 3}\n✅TK HKD: ${tTKHKD}\n✅TShop: ${tTShop}\n\n⭐️Active ${nvActive}/${danhSachNhanVien.length}\n${dsChiTiet.join('\n')}`;
         $('#vung-ket-qua-bao-cao').val(ketQua);
         
         if (!chiXem) {
-            const thongKe = { tongFOS: danhSachNhanVien.length, tongMC: tMC, tongNTB: tNTB, nsbqNTB, tongETB: tETB, nsbqETB, tongPosThucHien: tPos, posChiTieu: danhSachNhanVien.length * 3, activeFOS: nvActive, tongAEPlus: tAE };
+            const thongKe = { tongFOS: danhSachNhanVien.length, tongMC: tMC, tongNTB: tNTB, nsbqNTB, tongETB: tETB, nsbqETB, tongPosThucHien: tPos, posChiTieu: danhSachNhanVien.length * 3, activeFOS: nvActive, tongAEPlus: tAE, tongTKHKD: tTKHKD, tongTShop: tTShop };
             luuBaoCaoLenServer(taoCauTrucGuiBaoCao(danhSachNhanVien, baoCaoLichSuGanNhat, thongKe), true);
         }
     };
@@ -296,6 +298,8 @@ $(function() {
             const nsbqETB = (thongKe.NSBQ_ETB !== undefined && thongKe.NSBQ_ETB !== null) ? Number(thongKe.NSBQ_ETB).toFixed(2) : '0.00';
             const tAE = thongKe.tongSoAEPlus || 0;
             const tPos = thongKe.tyLePOS || "0/0";
+            const tTKHKD = thongKe.tongSoTKHKD || 0;
+            const tTShop = thongKe.tongSoTShop || 0;
             const tActive = thongKe.tyLeActiveFOS || "0/0";
 
             ketQua += `🔥${tFOS} FOS – ${tMC} MC\n`;
@@ -304,7 +308,9 @@ $(function() {
             ketQua += `✅ETB: ${tETB}\n`;
             ketQua += `✅NSBQ ETB: ${nsbqETB}\n`;
             ketQua += `✅AE+: ${tAE}\n`;
-            ketQua += `✅Pos: ${tPos}\n\n`;
+            ketQua += `✅Pos: ${tPos}\n`;
+            ketQua += `✅TK HKD: ${tTKHKD}\n`;
+            ketQua += `✅TShop: ${tTShop}\n\n`;
             ketQua += `⭐️Active ${tActive}\n`;
         }
 
@@ -444,6 +450,7 @@ $(function() {
             $('#tieu-de-modal-sua-bao-cao').text(`Sửa nhanh: ${nhanVienHienTai}`);
             $('#ntb-sua').val(trichXuatSoLieu(bc, 'NTB')); $('#etb-sua').val(trichXuatSoLieu(bc, 'ETB'));
             $('#pos-sua').val(trichXuatSoLieu(bc, 'Pos')); $('#aeplus-sua').val(trichXuatSoLieu(bc, ['AE+', 'AE Plus']));
+            $('#tkhkd-sua').val(trichXuatSoLieu(bc, ['Tài khoản hộ kinh doanh', 'TK HKD', 'HKD'])); $('#tshop-sua').val(trichXuatSoLieu(bc, 'TShop'));
             $('#mtd-sua').val(trichXuatSoLieu(bc, 'MTD MC'));
             modalSuaBaoCao.show();
         }
@@ -453,7 +460,7 @@ $(function() {
         const nv = danhSachNhanVien.find(n => n.ten === nhanVienHienTai);
         if (nv) {
             const n = parseInt($('#ntb-sua').val()) || 0, e = parseInt($('#etb-sua').val()) || 0;
-            nv.baoCao = `Fos ${nv.ten}\nTổng MC: ${n+e}\nNTB: ${n}\nETB: ${e}\nAE+: ${$('#aeplus-sua').val() || 0}\nPos: ${$('#pos-sua').val() || 0}\nMTD MC: ${$('#mtd-sua').val() || 0}`;
+            nv.baoCao = `Fos ${nv.ten}\nTổng MC: ${n+e}\nNTB: ${n}\nETB: ${e}\nAE+: ${$('#aeplus-sua').val() || 0}\nPos: ${$('#pos-sua').val() || 0}\nTK HKD: ${$('#tkhkd-sua').val() || 0}\nTShop: ${$('#tshop-sua').val() || 0}\nMTD MC: ${$('#mtd-sua').val() || 0}`;
             nv.trangThai = 'Đã báo cáo'; hienThiDanhSachNhanVien(); luuVaoBoNhoTam(); modalSuaBaoCao.hide();
         }
     });
