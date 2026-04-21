@@ -87,9 +87,6 @@ $(function() {
                         <button class="${lopNut} nut-mo-sua-nhanh" data-nv-ten="${nv.ten}" title="${nv.ten}">
                             ${nv.ten}
                         </button>
-                        <button class="btn nut-sua-nv nut-mo-sua-nhanh" data-nv-ten="${nv.ten}">
-                            <i class="fa-solid fa-pen-to-square"></i>
-                        </button>
                         <button class="btn nut-xoa-nv nut-xoa-nv-kich-hoat" data-nv-id="${nv._id}" data-nv-ten="${nv.ten}">
                             <i class="fa-solid fa-trash-can"></i>
                         </button>
@@ -520,4 +517,173 @@ $(function() {
     khoiTaoGiaoDien(); 
     xayDungMenuGiaoDien(); 
     taiDuLieuTuServer(); 
+
+    // Initialize Particles.js with random effects
+    if (window.particlesJS) {
+        const themes = [
+            { // Classic Blue Web
+                color: "#4a90e2",
+                lineColor: "#4a90e2",
+                shape: "circle",
+                moveSpeed: 2,
+                density: 80
+            },
+            { // Cosmic Purple
+                color: "#9b59b6",
+                lineColor: "#9b59b6",
+                shape: "star",
+                moveSpeed: 1,
+                density: 50
+            },
+            { // Tech Green (Matrix-ish)
+                color: "#2ecc71",
+                lineColor: "#2ecc71",
+                shape: "edge",
+                moveSpeed: 3,
+                density: 100
+            },
+            { // Sunset Orange
+                color: "#e67e22",
+                lineColor: "#d35400",
+                shape: "polygon",
+                moveSpeed: 4,
+                density: 60
+            },
+            { // Snowflakes/Bubbles
+                color: "#ffffff",
+                lineColor: "#ffffff",
+                shape: "circle",
+                moveSpeed: 0.5,
+                density: 40,
+                opacity: 0.8,
+                lines: false
+            },
+            { // Fire/Embers
+                color: ["#ff4500", "#ff8c00", "#ffd700"],
+                lineColor: "#ff4500",
+                shape: "circle",
+                moveSpeed: 5,
+                density: 60,
+                direction: "top",
+                lines: false
+            },
+            { // Deep Sea
+                color: "#00ced1",
+                lineColor: "#008b8b",
+                shape: "circle",
+                moveSpeed: 1.5,
+                density: 45,
+                opacity: 0.6
+            },
+            { // Golden Dust
+                color: "#ffd700",
+                lineColor: "#daa520",
+                shape: "circle",
+                moveSpeed: 1,
+                density: 120,
+                size: 2,
+                lines: false
+            },
+            { // Neon Pink Cyber
+                color: "#ff1493",
+                lineColor: "#ff00ff",
+                shape: "edge",
+                moveSpeed: 4,
+                density: 70
+            },
+            { // Ghost Mode (Gray)
+                color: "#95a5a6",
+                lineColor: "#bdc3c7",
+                shape: "circle",
+                moveSpeed: 1,
+                density: 30,
+                opacity: 0.2
+            },
+            { // Heavy Rain
+                color: "#a9c6d9",
+                shape: "circle",
+                moveSpeed: 15,
+                density: 150,
+                direction: "bottom",
+                straight: true,
+                lines: false,
+                size: 1,
+                opacity: 0.6
+            },
+            { // Soft Snow
+                color: "#ffffff",
+                shape: "circle",
+                moveSpeed: 2,
+                density: 100,
+                direction: "bottom",
+                straight: false,
+                lines: false,
+                size: 4,
+                opacity: 0.8
+            },
+            { // THICK FOG
+                color: "#ffffff",
+                shape: "circle",
+                moveSpeed: 0.8,
+                density: 20,
+                direction: "none",
+                straight: false,
+                lines: false,
+                size: 40,
+                opacity: 0.1
+            },
+            { // Rising Bubbles (Oxygen)
+                color: "#e2f1f8",
+                shape: "circle",
+                moveSpeed: 4,
+                density: 60,
+                direction: "top",
+                straight: false,
+                lines: false,
+                size: 5,
+                opacity: 0.3
+            }
+        ];
+
+        const t = themes[Math.floor(Math.random() * themes.length)];
+
+        particlesJS('particles-js', {
+            "particles": {
+                "number": { "value": t.density, "density": { "enable": true, "value_area": 800 } },
+                "color": { "value": t.color },
+                "shape": { "type": t.shape },
+                "opacity": { "value": t.opacity || 0.4, "random": true },
+                "size": { "value": t.size || 3, "random": true },
+                "line_linked": { 
+                    "enable": t.lines !== undefined ? t.lines : true, 
+                    "distance": 150, 
+                    "color": t.lineColor, 
+                    "opacity": 0.2, 
+                    "width": 1 
+                },
+                "move": { 
+                    "enable": true, 
+                    "speed": t.moveSpeed, 
+                    "direction": t.direction || "none", 
+                    "random": true, 
+                    "straight": t.straight || false, 
+                    "out_mode": "out", 
+                    "bounce": false 
+                }
+            },
+            "interactivity": {
+                "detect_on": "canvas",
+                "events": {
+                    "onhover": { "enable": true, "mode": "grab" },
+                    "onclick": { "enable": true, "mode": "push" },
+                    "resize": true
+                },
+                "modes": {
+                    "grab": { "distance": 140, "line_linked": { "opacity": 1 } },
+                    "push": { "particles_nb": 4 }
+                }
+            },
+            "retina_detect": true
+        });
+    }
 });
