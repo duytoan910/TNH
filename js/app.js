@@ -375,12 +375,14 @@ $(function() {
         apDungGiaoDien(lop); 
         luuCauHinhGiaoDien(lop);
         hienThiThongBao(`Giao diện: ${theme} ${mode}`);
+        if (window.capNhatParticles) window.capNhatParticles();
     });
 
     $('#nut-giao-dien-ngau-nhien').on('click', e => { 
         e.preventDefault(); 
         luuCauHinhGiaoDien('random'); 
         apDungGiaoDienNgauNhien(); 
+        if (window.capNhatParticles) window.capNhatParticles();
     });
 
     $('#nut-luu-nv-moi').on('click', async () => {
@@ -463,6 +465,7 @@ $(function() {
         khoiBaoCao.forEach(khoi => {
             const khoiTrim = khoi.trim();
             const nv = danhSachNhanVien.find(n => {
+                if (!n || !n.ten) return false;
                 const tenEscape = n.ten.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
                 return new RegExp(`^Fos\\s+${tenEscape}(?=\\s|$)`, 'i').test(khoiTrim);
             });
@@ -518,134 +521,52 @@ $(function() {
     xayDungMenuGiaoDien(); 
     taiDuLieuTuServer(); 
 
-    // Initialize Particles.js with random effects
-    if (window.particlesJS) {
-        const themes = [
-            { // Classic Blue Web
-                color: "#4a90e2",
-                lineColor: "#4a90e2",
-                shape: "circle",
-                moveSpeed: 2,
-                density: 80
-            },
-            { // Cosmic Purple
-                color: "#9b59b6",
-                lineColor: "#9b59b6",
-                shape: "star",
-                moveSpeed: 1,
-                density: 50
-            },
-            { // Tech Green (Matrix-ish)
-                color: "#2ecc71",
-                lineColor: "#2ecc71",
-                shape: "edge",
-                moveSpeed: 3,
-                density: 100
-            },
-            { // Sunset Orange
-                color: "#e67e22",
-                lineColor: "#d35400",
-                shape: "polygon",
-                moveSpeed: 4,
-                density: 60
-            },
-            { // Snowflakes/Bubbles
-                color: "#ffffff",
-                lineColor: "#ffffff",
-                shape: "circle",
-                moveSpeed: 0.5,
-                density: 40,
-                opacity: 0.8,
-                lines: false
-            },
-            { // Fire/Embers
-                color: ["#ff4500", "#ff8c00", "#ffd700"],
-                lineColor: "#ff4500",
-                shape: "circle",
-                moveSpeed: 5,
-                density: 60,
-                direction: "top",
-                lines: false
-            },
-            { // Deep Sea
-                color: "#00ced1",
-                lineColor: "#008b8b",
-                shape: "circle",
-                moveSpeed: 1.5,
-                density: 45,
-                opacity: 0.6
-            },
-            { // Golden Dust
-                color: "#ffd700",
-                lineColor: "#daa520",
-                shape: "circle",
-                moveSpeed: 1,
-                density: 120,
-                size: 2,
-                lines: false
-            },
-            { // Neon Pink Cyber
-                color: "#ff1493",
-                lineColor: "#ff00ff",
-                shape: "edge",
-                moveSpeed: 4,
-                density: 70
-            },
-            { // Ghost Mode (Gray)
-                color: "#95a5a6",
-                lineColor: "#bdc3c7",
-                shape: "circle",
-                moveSpeed: 1,
-                density: 30,
-                opacity: 0.2
-            },
-            { // Heavy Rain
-                color: "#a9c6d9",
-                shape: "circle",
-                moveSpeed: 15,
-                density: 150,
-                direction: "bottom",
-                straight: true,
-                lines: false,
-                size: 1,
-                opacity: 0.6
-            },
-            { // Soft Snow
-                color: "#ffffff",
-                shape: "circle",
-                moveSpeed: 2,
-                density: 100,
-                direction: "bottom",
-                straight: false,
-                lines: false,
-                size: 4,
-                opacity: 0.8
-            },
-            { // THICK FOG
-                color: "#ffffff",
-                shape: "circle",
-                moveSpeed: 0.8,
-                density: 20,
-                direction: "none",
-                straight: false,
-                lines: false,
-                size: 40,
-                opacity: 0.1
-            },
-            { // Rising Bubbles (Oxygen)
-                color: "#e2f1f8",
-                shape: "circle",
-                moveSpeed: 4,
-                density: 60,
-                direction: "top",
-                straight: false,
-                lines: false,
-                size: 5,
-                opacity: 0.3
-            }
-        ];
+    // Initialize Particles.js with random effects and theme awareness
+    let currentParticleTheme = null;
 
-        const t = themes[Math.floor(Math.random() * themes.length)];
+    window.capNhatParticles = (isNew = false) => {
+        if (!window.particlesJS) return;
+        
+        const isDarkMode = $('body').attr('class')?.includes('-dark');
+
+        if (!currentParticleTheme || isNew) {
+            const themes = [
+                { color: "#4a90e2", lineColor: "#4a90e2", shape: "circle", moveSpeed: 2, density: 80 },
+                { color: "#9b59b6", lineColor: "#9b59b6", shape: "star", moveSpeed: 1, density: 50 },
+                { color: "#2ecc71", lineColor: "#2ecc71", shape: "edge", moveSpeed: 3, density: 100 },
+                { color: "#e67e22", lineColor: "#d35400", shape: "polygon", moveSpeed: 4, density: 60 },
+                { name: 'snow', color: "#ffffff", shape: "circle", moveSpeed: 1.5, density: 60, direction: "bottom", straight: false, lines: false, size: 4, opacity: 0.8 },
+                { name: 'fire', color: ["#ff4500", "#ff8c00", "#ffd700"], lineColor: "#ff4500", shape: "circle", moveSpeed: 5, density: 60, direction: "top", lines: false },
+                { color: "#00ced1", lineColor: "#008b8b", shape: "circle", moveSpeed: 1.5, density: 45, opacity: 0.6 },
+                { color: "#ffd700", lineColor: "#daa520", shape: "circle", moveSpeed: 1, density: 120, size: 2, lines: false },
+                { color: "#ff1493", lineColor: "#ff00ff", shape: "edge", moveSpeed: 4, density: 70 },
+                { color: "#95a5a6", lineColor: "#bdc3c7", shape: "circle", moveSpeed: 1, density: 30, opacity: 0.2 },
+                { name: 'rain', color: "#a9c6d9", shape: "circle", moveSpeed: 15, density: 150, direction: "bottom", straight: true, lines: false, size: 1, opacity: 0.6 },
+                { name: 'fog', color: "#ffffff", shape: "circle", moveSpeed: 0.8, density: 20, direction: "none", straight: false, lines: false, size: 40, opacity: 0.1 },
+                { name: 'bubbles', color: "#e2f1f8", shape: "circle", moveSpeed: 4, density: 60, direction: "top", straight: false, lines: false, size: 5, opacity: 0.3 }
+            ];
+            currentParticleTheme = themes[Math.floor(Math.random() * themes.length)];
+        }
+
+        // Clone to avoid modifying the original theme object
+        const t = JSON.parse(JSON.stringify(currentParticleTheme));
+
+        // Adjust colors for light mode visibility
+        if (!isDarkMode) {
+            const darken = (hex) => {
+                if (hex === "#ffffff") return "#444444";
+                if (hex === "#e2f1f8") return "#4a90e2";
+                if (hex === "#a9c6d9") return "#007aff";
+                return hex;
+            };
+            if (Array.isArray(t.color)) t.color = t.color.map(darken);
+            else t.color = darken(t.color);
+            if (t.lineColor) t.lineColor = darken(t.lineColor);
+            
+            // For themes that depend on white contrast
+            if (t.name === 'fog') t.opacity = 0.3;
+            if (t.name === 'snow') t.opacity = 0.6;
+        }
 
         particlesJS('particles-js', {
             "particles": {
@@ -657,33 +578,23 @@ $(function() {
                 "line_linked": { 
                     "enable": t.lines !== undefined ? t.lines : true, 
                     "distance": 150, 
-                    "color": t.lineColor, 
+                    "color": t.lineColor || t.color, 
                     "opacity": 0.2, 
                     "width": 1 
                 },
                 "move": { 
-                    "enable": true, 
-                    "speed": t.moveSpeed, 
-                    "direction": t.direction || "none", 
-                    "random": true, 
-                    "straight": t.straight || false, 
-                    "out_mode": "out", 
-                    "bounce": false 
+                    "enable": true, "speed": t.moveSpeed, "direction": t.direction || "none", 
+                    "random": true, "straight": t.straight || false, "out_mode": "out", "bounce": false 
                 }
             },
             "interactivity": {
                 "detect_on": "canvas",
-                "events": {
-                    "onhover": { "enable": true, "mode": "grab" },
-                    "onclick": { "enable": true, "mode": "push" },
-                    "resize": true
-                },
-                "modes": {
-                    "grab": { "distance": 140, "line_linked": { "opacity": 1 } },
-                    "push": { "particles_nb": 4 }
-                }
+                "events": { "onhover": { "enable": true, "mode": "grab" }, "onclick": { "enable": true, "mode": "push" }, "resize": true },
+                "modes": { "grab": { "distance": 140, "line_linked": { "opacity": 1 } }, "push": { "particles_nb": 4 } }
             },
             "retina_detect": true
         });
-    }
+    };
+
+    window.capNhatParticles(true);
 });

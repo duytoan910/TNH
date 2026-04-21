@@ -2,7 +2,7 @@
 import { dinhDangNgayHienThi, dinhDangNgayISO, trichXuatSoLieu } from './utils.js';
 
 export const kiemTraTenTrongBaoCao = (duLieuNv, noiDungBaoCao) => {
-    if (!noiDungBaoCao.trim()) {
+    if (!noiDungBaoCao.trim() || !duLieuNv || typeof duLieuNv.ten !== 'string') {
         duLieuNv.kiemTraTen = null;
         return;
     }

@@ -57,6 +57,7 @@ export const trichXuatSoLieu = (noiDung, tuKhoa) => {
     if (!noiDung) return 0;
     const danhSachTuKhoa = Array.isArray(tuKhoa) ? tuKhoa : [tuKhoa];
     for (const tu of danhSachTuKhoa) {
+        if (typeof tu !== 'string') continue;
         const tuDaEscape = tu.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
         const bieuThuc = new RegExp(tuDaEscape + '\\s*[: ]\\s*(\\d+)', 'i');
         const khop = noiDung.match(bieuThuc);

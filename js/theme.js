@@ -32,6 +32,8 @@ export const apDungGiaoDien = (tenLopGiaoDien) => {
         }
     }
     $('body').addClass(tenLopGiaoDien);
+    // Thông báo cho các module khác (như particles.js)
+    document.dispatchEvent(new CustomEvent('themeChanged', { detail: { theme: tenLopGiaoDien } }));
 };
 
 export const luuCauHinhGiaoDien = (luaChon) => {
