@@ -465,7 +465,7 @@ $(function() {
         khoiBaoCao.forEach(khoi => {
             const khoiTrim = khoi.trim();
             const nv = danhSachNhanVien.find(n => {
-                if (!n || !n.ten) return false;
+                if (!n || typeof n.ten !== 'string') return false;
                 const tenEscape = n.ten.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
                 return new RegExp(`^Fos\\s+${tenEscape}(?=\\s|$)`, 'i').test(khoiTrim);
             });
@@ -531,56 +531,123 @@ $(function() {
 
         if (!currentParticleTheme || isNew) {
             const themes = [
-                { color: "#4a90e2", lineColor: "#4a90e2", shape: "circle", moveSpeed: 2, density: 80 },
-                { color: "#9b59b6", lineColor: "#9b59b6", shape: "star", moveSpeed: 1, density: 50 },
-                { color: "#2ecc71", lineColor: "#2ecc71", shape: "edge", moveSpeed: 3, density: 100 },
-                { color: "#e67e22", lineColor: "#d35400", shape: "polygon", moveSpeed: 4, density: 60 },
-                { name: 'snow', color: "#ffffff", shape: "circle", moveSpeed: 1.5, density: 60, direction: "bottom", straight: false, lines: false, size: 4, opacity: 0.8 },
-                { name: 'fire', color: ["#ff4500", "#ff8c00", "#ffd700"], lineColor: "#ff4500", shape: "circle", moveSpeed: 5, density: 60, direction: "top", lines: false },
-                { color: "#00ced1", lineColor: "#008b8b", shape: "circle", moveSpeed: 1.5, density: 45, opacity: 0.6 },
-                { color: "#ffd700", lineColor: "#daa520", shape: "circle", moveSpeed: 1, density: 120, size: 2, lines: false },
-                { color: "#ff1493", lineColor: "#ff00ff", shape: "edge", moveSpeed: 4, density: 70 },
-                { color: "#95a5a6", lineColor: "#bdc3c7", shape: "circle", moveSpeed: 1, density: 30, opacity: 0.2 },
-                { name: 'rain', color: "#a9c6d9", shape: "circle", moveSpeed: 15, density: 150, direction: "bottom", straight: true, lines: false, size: 1, opacity: 0.6 },
-                { name: 'fog', color: "#ffffff", shape: "circle", moveSpeed: 0.8, density: 20, direction: "none", straight: false, lines: false, size: 40, opacity: 0.1 },
-                { name: 'bubbles', color: "#e2f1f8", shape: "circle", moveSpeed: 4, density: 60, direction: "top", straight: false, lines: false, size: 5, opacity: 0.3 }
+                { 
+                    name: 'electric',
+                    color: ["#00d2ff", "#3a7bd5", "#ffffff"],
+                    lineColor: "#00d2ff",
+                    shape: "circle",
+                    moveSpeed: 6,
+                    density: 100,
+                    size: 3,
+                    opacity: 0.7,
+                    hoverMode: "grab",
+                    clickMode: "push"
+                },
+                { 
+                    name: 'matrix',
+                    color: "#00ff00",
+                    shape: "edge",
+                    moveSpeed: 8,
+                    density: 120,
+                    direction: "bottom",
+                    straight: true,
+                    lines: false,
+                    size: 2,
+                    opacity: 0.8,
+                    hoverMode: "bubble",
+                    clickMode: "repulse"
+                },
+                { 
+                    name: 'blizzard',
+                    color: "#ffffff",
+                    shape: "circle",
+                    moveSpeed: 5,
+                    density: 150,
+                    direction: "bottom-left",
+                    lines: false,
+                    size: 4,
+                    opacity: 0.9,
+                    hoverMode: "repulse",
+                    clickMode: "bubble"
+                },
+                { 
+                    name: 'plasma',
+                    color: ["#ff0080", "#ff8c00", "#40e0d0"],
+                    shape: "polygon",
+                    moveSpeed: 3,
+                    density: 50,
+                    size: 15,
+                    opacity: 0.6,
+                    lines: true,
+                    lineColor: "#ffffff",
+                    hoverMode: "bubble",
+                    clickMode: "push"
+                },
+                { 
+                    name: 'stars',
+                    color: "#f1c40f",
+                    shape: "star",
+                    moveSpeed: 1,
+                    density: 80,
+                    size: 5,
+                    opacity: 1,
+                    lines: false,
+                    hoverMode: "grab",
+                    clickMode: "repulse"
+                },
+                { 
+                    name: 'volcano',
+                    color: ["#ff4b2b", "#ff416c", "#000000"],
+                    shape: "circle",
+                    moveSpeed: 7,
+                    density: 90,
+                    direction: "top",
+                    size: 4,
+                    opacity: 0.8,
+                    lines: false,
+                    hoverMode: "bubble",
+                    clickMode: "push"
+                }
             ];
             currentParticleTheme = themes[Math.floor(Math.random() * themes.length)];
         }
 
-        // Clone to avoid modifying the original theme object
         const t = JSON.parse(JSON.stringify(currentParticleTheme));
 
-        // Adjust colors for light mode visibility
+        // Tăng độ tương phản cho nền sáng
         if (!isDarkMode) {
-            const darken = (hex) => {
-                if (hex === "#ffffff") return "#444444";
-                if (hex === "#e2f1f8") return "#4a90e2";
-                if (hex === "#a9c6d9") return "#007aff";
-                return hex;
+            const darkMap = {
+                "#ffffff": "#333333",
+                "#00ff00": "#008000",
+                "#f1c40f": "#d4ac0d",
+                "plasma": { color: ["#c00060", "#e67e22", "#16a085"], lineColor: "#000000" }
             };
-            if (Array.isArray(t.color)) t.color = t.color.map(darken);
-            else t.color = darken(t.color);
-            if (t.lineColor) t.lineColor = darken(t.lineColor);
             
-            // For themes that depend on white contrast
-            if (t.name === 'fog') t.opacity = 0.3;
-            if (t.name === 'snow') t.opacity = 0.6;
+            if (t.name === 'plasma') {
+                t.color = darkMap.plasma.color;
+                t.lineColor = darkMap.plasma.lineColor;
+            } else {
+                const adjust = (c) => darkMap[c] || c;
+                if (Array.isArray(t.color)) t.color = t.color.map(adjust);
+                else t.color = adjust(t.color);
+                if (t.lineColor) t.lineColor = adjust(t.lineColor);
+            }
+            t.opacity = Math.min(1, t.opacity + 0.2);
         }
 
         particlesJS('particles-js', {
             "particles": {
                 "number": { "value": t.density, "density": { "enable": true, "value_area": 800 } },
                 "color": { "value": t.color },
-                "shape": { "type": t.shape },
-                "opacity": { "value": t.opacity || 0.4, "random": true },
-                "size": { "value": t.size || 3, "random": true },
+                "shape": { "type": t.shape, "polygon": { "nb_sides": 5 } },
+                "opacity": { "value": t.opacity, "random": true, "anim": { "enable": true, "speed": 1, "opacity_min": 0.1, "sync": false } },
+                "size": { "value": t.size, "random": true, "anim": { "enable": true, "speed": 4, "size_min": 0.3, "sync": false } },
                 "line_linked": { 
                     "enable": t.lines !== undefined ? t.lines : true, 
                     "distance": 150, 
-                    "color": t.lineColor || t.color, 
-                    "opacity": 0.2, 
-                    "width": 1 
+                    "color": t.lineColor || (Array.isArray(t.color) ? t.color[0] : t.color), 
+                    "opacity": 0.4, 
+                    "width": 2 
                 },
                 "move": { 
                     "enable": true, "speed": t.moveSpeed, "direction": t.direction || "none", 
@@ -588,13 +655,28 @@ $(function() {
                 }
             },
             "interactivity": {
-                "detect_on": "canvas",
-                "events": { "onhover": { "enable": true, "mode": "grab" }, "onclick": { "enable": true, "mode": "push" }, "resize": true },
-                "modes": { "grab": { "distance": 140, "line_linked": { "opacity": 1 } }, "push": { "particles_nb": 4 } }
+                "detect_on": "window",
+                "events": { 
+                    "onhover": { "enable": true, "mode": t.hoverMode || "grab" }, 
+                    "onclick": { "enable": true, "mode": t.clickMode || "push" }, 
+                    "resize": true 
+                },
+                "modes": { 
+                    "grab": { "distance": 200, "line_linked": { "opacity": 1 } }, 
+                    "bubble": { "distance": 200, "size": t.size * 2, "duration": 2, "opacity": 1, "speed": 3 },
+                    "repulse": { "distance": 200, "duration": 0.4 },
+                    "push": { "particles_nb": 6 }
+                }
             },
             "retina_detect": true
         });
     };
 
     window.capNhatParticles(true);
+
+    // Lắng nghe sự kiện thay đổi giao diện để cập nhật màu sắc hạt
+    document.addEventListener('themeChanged', () => {
+        // Delay một chút để class body được áp dụng hoàn toàn
+        setTimeout(() => window.capNhatParticles(false), 50);
+    });
 });
