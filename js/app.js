@@ -16,7 +16,6 @@ $(function() {
     
     // --- KHỞI TẠO MODAL BOOTSTRAP ---
     const modalThemNv = new bootstrap.Modal('#modal-them-nhan-vien');
-    const modalDanBaoCao = new bootstrap.Modal('#modal-dan-bao-cao');
     const modalSuaBaoCao = new bootstrap.Modal('#modal-sua-bao-cao');
     const modalDanNhieuBaoCao = new bootstrap.Modal('#modal-dan-nhieu-bao-cao');
     const modalXacNhanXoa = new bootstrap.Modal('#modal-xac-nhan-xoa');
@@ -85,10 +84,10 @@ $(function() {
             html += `
                 <div class="col-6">
                     <div class="input-group shadow-sm" style="border-radius: var(--btn-radius); overflow: hidden;">
-                        <button class="${lopNut}" data-nv-ten="${nv.ten}" title="${nv.ten}">
+                        <button class="${lopNut} nut-mo-sua-nhanh" data-nv-ten="${nv.ten}" title="${nv.ten}">
                             ${nv.ten}
                         </button>
-                        <button class="btn nut-sua-nv nut-sua-nhanh-nv" data-nv-ten="${nv.ten}">
+                        <button class="btn nut-sua-nv nut-mo-sua-nhanh" data-nv-ten="${nv.ten}">
                             <i class="fa-solid fa-pen-to-square"></i>
                         </button>
                         <button class="btn nut-xoa-nv nut-xoa-nv-kich-hoat" data-nv-id="${nv._id}" data-nv-ten="${nv.ten}">
@@ -270,8 +269,31 @@ $(function() {
 
         const nsbqNTB = (nvActive > 0) ? (tNTB / nvActive).toFixed(2) : '0.00';
         const nsbqETB = (nvActive > 0) ? (tETB / nvActive).toFixed(2) : '0.00';
-        let ketQua = `${quanLy} ngày ${ngayHienThi}\n🔥${danhSachNhanVien.length} FOS – ${tMC} MC\n✅NTB: ${tNTB}\n✅NSBQ NTB: ${nsbqNTB}\n✅ETB: ${tETB}\n✅NSBQ ETB: ${nsbqETB}\n✅AE+: ${tAE}\n✅Pos: ${tPos}/${danhSachNhanVien.length * 3}\n✅TK HKD: ${tTKHKD}\n✅TShop: ${tTShop}\n\n⭐️Active ${nvActive}/${danhSachNhanVien.length}\n${dsChiTiet.join('\n')}`;
+        let ketQua = `${quanLy} ngày ${ngayHienThi}\n🔥${nvActive} FOS – ${tMC} MC\n✅NTB: ${tNTB}\n✅NSBQ NTB: ${nsbqNTB}\n✅ETB: ${tETB}\n✅NSBQ ETB: ${nsbqETB}\n✅AE+: ${tAE}\n✅Pos: ${tPos}/${danhSachNhanVien.length * 3}\n✅TK HKD: ${tTKHKD}\n✅TShop: ${tTShop}\n\n⭐️Active ${nvActive}/${danhSachNhanVien.length}\n${dsChiTiet.join('\n')}`;
         $('#vung-ket-qua-bao-cao').val(ketQua);
+
+        // --- TẠO BÁO CÁO FORMAT 2 (MỚI) ---
+        const ngayThangHienThi = (() => {
+            const n = new Date();
+            const d = String(n.getDate()).padStart(2, '0');
+            const m = String(n.getMonth() + 1).padStart(2, '0');
+            return `${d}/${m}`;
+        })();
+        
+        const a = (nvActive > 0) ? (Math.floor((tMC / nvActive) * 100) / 100).toFixed(2) : '0.00';
+        const b = (nvActive > 0) ? (Math.floor((tTKHKD / nvActive) * 100) / 100).toFixed(2) : '0.00';
+        const c = (nvActive > 0) ? (Math.floor((tTShop / nvActive) * 100) / 100).toFixed(2) : '0.00';
+        
+        let ketQua2 = `Ngày ${ngayThangHienThi}\n`;
+        ketQua2 += `${quanLy} - SL FOS: ${nvActive}\n`;
+        ketQua2 += `❣️MC ETB+NTB: ${a}/${nvActive}\n`;
+        ketQua2 += `🌶️CA HKD: ${b}/${nvActive}\n`;
+        ketQua2 += `❤️🔥T-Shop: ${c}/${nvActive}\n`;
+        ketQua2 += `🥦Auto Bill: 0/0\n`;
+        ketQua2 += `🥕Loyalty: 0/0\n`;
+        ketQua2 += `CD: 0`;
+        
+        $('#vung-ket-qua-bao-cao-2').val(ketQua2);
         
         if (!chiXem) {
             const thongKe = { tongFOS: danhSachNhanVien.length, tongMC: tMC, tongNTB: tNTB, nsbqNTB, tongETB: tETB, nsbqETB, tongPosThucHien: tPos, posChiTieu: danhSachNhanVien.length * 3, activeFOS: nvActive, tongAEPlus: tAE, tongTKHKD: tTKHKD, tongTShop: tTShop };
@@ -386,63 +408,7 @@ $(function() {
         catch (e) { hienThiThongBao(e.message, 'error'); } finally { anTaiTrang(); modalXacNhanXoa.hide(); }
     });
 
-    $vungDsNv.on('click', '.nut-ten-nv', function() {
-        nhanVienHienTai = $(this).data('nv-ten');
-        const nv = danhSachNhanVien.find(n => n.ten === nhanVienHienTai);
-        if (nv) { 
-            $('#modalDanBaoCaoLabel').text(`Báo cáo của ${nhanVienHienTai}`); 
-            $('#noi-dung-bao-cao-nhap').val(nv.baoCao); 
-            modalDanBaoCao.show(); 
-        }
-    });
-
-    $('#nut-luu-bao-cao-don').on('click', () => {
-        const nv = danhSachNhanVien.find(n => n.ten === nhanVienHienTai);
-        if (nv) {
-            const nd = $('#noi-dung-bao-cao-nhap').val();
-            nv.baoCao = nd; 
-            
-            // Logic thông minh để xác định trạng thái
-            // Nếu dòng đầu tiên có chứa "OFF" (hoặc lý do) sau tên Fos, thì giữ nguyên trạng thái là Off
-            // Ví dụ: "Fos Toan OFF" hoặc "Fos Toan Nghỉ phép"
-            const dongDau = nd.trim().split('\n')[0];
-            const tenEscape = nv.ten.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
-            const regexLyDo = new RegExp(`^Fos\\s+${tenEscape}\\s+(.+)$`, 'i');
-            const match = dongDau.match(regexLyDo);
-
-            if (match && match[1].trim()) {
-                 nv.trangThai = 'Off';
-            } else {
-                 nv.trangThai = 'Đã báo cáo';
-            }
-            
-            kiemTraTenTrongBaoCao(nv, nd);
-            hienThiDanhSachNhanVien(); luuVaoBoNhoTam(); modalDanBaoCao.hide();
-        }
-    });
-
-    $('#nut-danh-dau-off').on('click', () => {
-        const nv = danhSachNhanVien.find(n => n.ten === nhanVienHienTai);
-        if (nv) { 
-            const mtdCu = layMtdLichSu(nv.ten);
-            nv.baoCao = `Fos ${nv.ten} OFF\nMTD MC: ${mtdCu}`; 
-            nv.trangThai = 'Off'; 
-            hienThiDanhSachNhanVien(); luuVaoBoNhoTam(); modalDanBaoCao.hide(); 
-        }
-    });
-
-    $('#nut-xac-nhan-off-co-ly-do').on('click', () => {
-        const nv = danhSachNhanVien.find(n => n.ten === nhanVienHienTai);
-        if (nv) { 
-            const mtdCu = layMtdLichSu(nv.ten);
-            const lyDo = $('#ly-do-off-nhap').val().trim() || 'OFF';
-            nv.baoCao = `Fos ${nv.ten} ${lyDo}\nMTD MC: ${mtdCu}`; 
-            nv.trangThai = 'Off'; 
-            hienThiDanhSachNhanVien(); luuVaoBoNhoTam(); modalDanBaoCao.hide(); 
-        }
-    });
-
-    $vungDsNv.on('click', '.nut-sua-nhanh-nv', function() {
+    $vungDsNv.on('click', '.nut-mo-sua-nhanh', function() {
         nhanVienHienTai = $(this).data('nv-ten');
         const nv = danhSachNhanVien.find(n => n.ten === nhanVienHienTai);
         if (nv) {
@@ -462,6 +428,18 @@ $(function() {
             const n = parseInt($('#ntb-sua').val()) || 0, e = parseInt($('#etb-sua').val()) || 0;
             nv.baoCao = `Fos ${nv.ten}\nTổng MC: ${n+e}\nNTB: ${n}\nETB: ${e}\nAE+: ${$('#aeplus-sua').val() || 0}\nPos: ${$('#pos-sua').val() || 0}\nTK HKD: ${$('#tkhkd-sua').val() || 0}\nTShop: ${$('#tshop-sua').val() || 0}\nMTD MC: ${$('#mtd-sua').val() || 0}`;
             nv.trangThai = 'Đã báo cáo'; hienThiDanhSachNhanVien(); luuVaoBoNhoTam(); modalSuaBaoCao.hide();
+        }
+    });
+
+    $('#nut-sua-nhanh-off').on('click', () => {
+        const nv = danhSachNhanVien.find(n => n.ten === nhanVienHienTai);
+        if (nv) {
+            const mtdInput = $('#mtd-sua').val() || 0;
+            nv.baoCao = `Fos ${nv.ten} OFF\nMTD MC: ${mtdInput}`;
+            nv.trangThai = 'Off';
+            hienThiDanhSachNhanVien();
+            luuVaoBoNhoTam();
+            modalSuaBaoCao.hide();
         }
     });
 
@@ -501,9 +479,18 @@ $(function() {
     $('#nut-sao-chep').on('click', function() {
         const $btn = $(this);
         navigator.clipboard.writeText($('#vung-ket-qua-bao-cao').val()).then(() => {
-            hienThiThongBao('Đã sao chép báo cáo vào bộ nhớ tạm!');
+            hienThiThongBao('Đã sao chép báo cáo 1!');
             $btn.html('<i class="fa-solid fa-check"></i> Đã chép').addClass('btn-success').removeClass('btn-primary');
             setTimeout(() => $btn.html('<i class="fa-regular fa-copy"></i> Sao chép').removeClass('btn-success').addClass('btn-primary'), 2000);
+        });
+    });
+
+    $('#nut-sao-chep-2').on('click', function() {
+        const $btn = $(this);
+        navigator.clipboard.writeText($('#vung-ket-qua-bao-cao-2').val()).then(() => {
+            hienThiThongBao('Đã sao chép báo cáo hiệu suất!');
+            $btn.html('<i class="fa-solid fa-check"></i> Đã chép').addClass('btn-success').removeClass('btn-outline-primary');
+            setTimeout(() => $btn.html('<i class="fa-regular fa-copy"></i> Sao chép').removeClass('btn-success').addClass('btn-outline-primary'), 2000);
         });
     });
     

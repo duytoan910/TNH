@@ -168,6 +168,20 @@
                         <textarea id="vung-ket-qua-bao-cao" class="form-control" rows="12" style="font-family: 'Courier New', Courier, monospace; font-size: 0.9rem;"></textarea>
                     </div>
                 </div>
+
+                <div class="card border-0 shadow-sm mt-3">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                             <h5 class="card-title mb-0">Báo cáo hiệu suất (Format mới)</h5>
+                            <div class="d-flex flex-shrink-0">
+                                <button id="nut-sao-chep-2" class="btn btn-sm btn-outline-primary">
+                                    <i class="fa-regular fa-copy"></i> Sao chép
+                                </button>
+                            </div>
+                        </div>
+                        <textarea id="vung-ket-qua-bao-cao-2" class="form-control" rows="8" style="font-family: 'Courier New', Courier, monospace; font-size: 0.9rem;"></textarea>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -207,39 +221,6 @@
       </div>
     </div>
     
-    <!-- Modal Dán Báo Cáo Đơn -->
-    <div class="modal fade" id="modal-dan-bao-cao" tabindex="-1" aria-hidden="true">
-      <div class="modal-dialog modal-dialog-centered modal-lg">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h1 class="modal-title fs-5" id="modalDanBaoCaoLabel">Báo cáo của...</h1>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <div class="modal-body">
-            <textarea id="noi-dung-bao-cao-nhap" class="form-control" rows="6" placeholder="Dán nội dung báo cáo vào đây..."></textarea>
-          </div>
-          <div class="modal-footer justify-content-between">
-            <div class="btn-group dropup">
-                <button type="button" class="btn btn-danger" id="nut-danh-dau-off">OFF (Nghỉ)</button>
-                <button type="button" class="btn btn-danger dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
-                    <span class="visually-hidden">Toggle Dropdown</span>
-                </button>
-                <div class="dropdown-menu p-3 shadow" style="min-width: 250px;">
-                     <label for="ly-do-off-nhap" class="form-label small mb-1">Lý do nghỉ:</label>
-                     <input type="text" class="form-control form-control-sm mb-2" id="ly-do-off-nhap" placeholder="VD: Phép năm, Ốm...">
-                     <button type="button" class="btn btn-sm btn-danger w-100" id="nut-xac-nhan-off-co-ly-do">Xác nhận</button>
-                </div>
-            </div>
-            <div>
-                 <button type="button" class="btn btn-info text-white me-1" id="nut-dan-tu-bo-nho"><i class="fa-solid fa-paste"></i> Dán</button>
-                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
-                 <button type="button" class="btn btn-primary" id="nut-luu-bao-cao-don">Lưu (Enter)</button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
     <!-- Modal Sửa Báo Cáo Chi Tiết -->
     <div class="modal fade" id="modal-sua-bao-cao" tabindex="-1" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered modal-lg">
@@ -289,6 +270,7 @@
             </form>
           </div>
           <div class="modal-footer">
+            <button type="button" class="btn btn-danger me-auto" id="nut-sua-nhanh-off">OFF (Nghỉ)</button>
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
             <button type="button" class="btn btn-primary" id="nut-xac-nhan-sua-bao-cao">Lưu thay đổi</button>
           </div>
