@@ -1,7 +1,19 @@
 
 
 import { KHOA_BO_NHO_TAM_CUC_BO } from './config.js';
-import { hienThiThongBao, hienThiTaiTrang, anTaiTrang, dinhDangNgayHienThi, dinhDangNgayISO, trichXuatSoLieu } from './utils.js';
+import { 
+    hienThiThongBao, 
+    hienThiTaiTrang, 
+    anTaiTrang, 
+    dinhDangNgayHienThi, 
+    dinhDangNgayISO, 
+    trichXuatSoLieu, 
+    trichXuatMC, 
+    trichXuatHKD, 
+    trichXuatDealDoanhSo, 
+    trichXuatVolIn, 
+    dinhDangDoanhSo 
+} from './utils.js';
 import { khoiTaoGiaoDien, xayDungMenuGiaoDien, apDungGiaoDien, luuCauHinhGiaoDien, apDungGiaoDienNgauNhien } from './theme.js';
 import { thucHienGoiApi, ghiNhanTuongTacApi, lamMoiThongKeCsdl, datCheDoUngDung, layCheDoUngDung } from './api.js';
 import { kiemTraTenTrongBaoCao, taoCauTrucGuiBaoCao } from './report.js';
@@ -103,10 +115,13 @@ $(function() {
         const homNayStr = dinhDangNgayISO(new Date());
         const duLieu = {
             ngay: homNayStr,
+            mcDay: $('input[name="opt-mc-day"]:checked').val() || 'Có',
+            chiNhanh: 'TNH',
             duLieuNv: danhSachNhanVien.map(n => ({
                 _id: n._id, baoCao: n.baoCao, trangThai: n.trangThai, kiemTraTen: n.kiemTraTen
             })),
-            vanBanKetQua: $('#vung-ket-qua-bao-cao').val()
+            vanBanKetQua: $('#vung-ket-qua-bao-cao').val(),
+            vanBanKetQua2: $('#vung-ket-qua-bao-cao-2').val()
         };
         localStorage.setItem(KHOA_BO_NHO_TAM_CUC_BO, JSON.stringify(duLieu));
     };
@@ -120,6 +135,9 @@ $(function() {
                 localStorage.removeItem(KHOA_BO_NHO_TAM_CUC_BO);
                 return false;
             }
+            if (duLieu.mcDay) {
+                $(`input[name="opt-mc-day"][value="${duLieu.mcDay}"]`).prop('checked', true);
+            }
             duLieu.duLieuNv.forEach(itemTam => {
                 const nv = danhSachNhanVien.find(n => n._id === itemTam._id);
                 if (nv && itemTam.baoCao) {
@@ -130,6 +148,7 @@ $(function() {
             });
             hienThiDanhSachNhanVien();
             if(duLieu.vanBanKetQua) $('#vung-ket-qua-bao-cao').val(duLieu.vanBanKetQua);
+            if(duLieu.vanBanKetQua2) $('#vung-ket-qua-bao-cao-2').val(duLieu.vanBanKetQua2);
             return true;
         } catch (e) { return false; }
     };
@@ -184,8 +203,9 @@ $(function() {
         const homNayStr = dinhDangNgayISO(new Date());
         
         try {
-            const bcHomNay = await thucHienGoiApi(`report?q={"ngayBaoCao": "${homNayStr}"}`);
-            if (bcHomNay.length > 0) {
+            const q = encodeURIComponent(JSON.stringify({ "ngayBaoCao": homNayStr }));
+            const bcHomNay = await thucHienGoiApi(`report?q=${q}`);
+            if (bcHomNay && bcHomNay.length > 0) {
                 bcHomNay[0].baoCaoFOS.forEach(item => {
                     const nv = danhSachNhanVien.find(n => n.ten === item.tenNhanVien);
                     if (nv && nv.baoCao === '') {
@@ -199,11 +219,11 @@ $(function() {
 
         // Lấy mốc lịch sử thực sự cũ hơn hôm nay
         try {
-            const truyVanLichSu = `{"ngayBaoCao": {"$lt": "${homNayStr}"}}`;
-            const sapXepLichSu = `{"$orderby": {"ngayBaoCao": -1}}`;
-            const dsBcCu = await thucHienGoiApi(`report?q=${truyVanLichSu}&h=${sapXepLichSu}&max=1`);
+            const q = encodeURIComponent(JSON.stringify({ "ngayBaoCao": { "$lt": homNayStr } }));
+            const h = encodeURIComponent(JSON.stringify({ "$orderby": { "ngayBaoCao": -1 } }));
+            const dsBcCu = await thucHienGoiApi(`report?q=${q}&h=${h}&max=1`);
             
-            if (dsBcCu.length > 0) {
+            if (dsBcCu && dsBcCu.length > 0) {
                 const bcLichSu = dsBcCu[0];
                 baoCaoLichSuGanNhat = bcLichSu;
                 ngayBaoCaoLichSu = bcLichSu.ngayBaoCao;
@@ -220,8 +240,9 @@ $(function() {
         if (layCheDoUngDung() === 'offline') return;
         if (chayNgam) $('#chi-bao-dang-luu').css('display', 'flex');
         try {
-            const kiemTra = await thucHienGoiApi(`report?q={"ngayBaoCao": "${cauTruc.ngayBaoCao}"}`);
-            if (kiemTra.length > 0) await thucHienGoiApi(`report/${kiemTra[0]._id}`, 'PUT', cauTruc);
+            const q = encodeURIComponent(JSON.stringify({ "ngayBaoCao": cauTruc.ngayBaoCao }));
+            const kiemTra = await thucHienGoiApi(`report?q=${q}`);
+            if (kiemTra && kiemTra.length > 0) await thucHienGoiApi(`report/${kiemTra[0]._id}`, 'PUT', cauTruc);
             else await thucHienGoiApi('report', 'POST', cauTruc);
             lamMoiThongKeCsdl(capNhatWidgetDb);
         } catch (error) {} finally { setTimeout(() => $('#chi-bao-dang-luu').fadeOut(), 1000); }
@@ -230,22 +251,60 @@ $(function() {
     const thucHienTaoBaoCao = (e, chiXem = false) => {
         danhSachNhanVien.sort((a, b) => b.chiTieu - a.chiTieu);
         hienThiDanhSachNhanVien();
-        const quanLy = 'TNH';
-        const ngayHienThi = dinhDangNgayHienThi(new Date());
-        let tMC = 0, tNTB = 0, tETB = 0, nvActive = 0, tPos = 0, tAE = 0, tTKHKD = 0, tTShop = 0;
+
+        const trienKhaiMCDay = $('input[name="opt-mc-day"]:checked').val() || 'Có';
+        const chiNhanh = 'TNH';
+        const tongSoNhanSu = danhSachNhanVien.length;
+
+        let nvTrienKhai = 0;
+        let tongTuongTac = 0;
+        let tongGap = 0;
+        let tongMC = 0, tongNTB = 0, tongETB = 0;
+        let tongHKD = 0, hkdNTB = 0, hkdETB = 0;
+        let tongReactive = 0;
+        let tongCashIn = 0;
+        let tongVolInSo = 0;
+        let volInRaws = [];
+
+        // Deal & Doanh số
+        let cdDeal = 0, cdDoanhSo = 0;
+        let tdDeal = 0, tdDoanhSo = 0;
+        let tongShopdeals = 0;
+        let tongPOS = 0;
+        let pntDeal = 0, pntDoanhSo = 0; // Banca Non Life (PNT)
+        let shopcashDeal = 0, shopcashDoanhSo = 0;
+
         let dsChiTiet = [];
         const banDoLichSu = new Map();
-        if (baoCaoLichSuGanNhat?.duLieuNvLichSu) baoCaoLichSuGanNhat.duLieuNvLichSu.forEach(n => banDoLichSu.set(n.ten, n));
+        if (baoCaoLichSuGanNhat?.duLieuNvLichSu) {
+            baoCaoLichSuGanNhat.duLieuNvLichSu.forEach(n => banDoLichSu.set(n.ten, n));
+        }
 
         danhSachNhanVien.forEach(nv => {
             const bieuTuong = nv.gioiTinh === 'Nữ' ? '👵' : '👨';
-            const bc = nv.baoCao;
-            let mtd = trichXuatSoLieu(bc, 'MTD MC');
-            let ntb = trichXuatSoLieu(bc, 'NTB'), etb = trichXuatSoLieu(bc, 'ETB');
-            let mcNay = ntb + etb;
-            if (mcNay === 0) mcNay = trichXuatSoLieu(bc, ['Tổng MC', 'MC']);
+            const bc = nv.baoCao || '';
 
-            if ((nv.trangThai === 'Off' || mcNay === 0) && mtd === 0 && baoCaoLichSuGanNhat) {
+            // Trích xuất các chỉ số từ báo cáo từng cá nhân
+            const infoMC = trichXuatMC(bc);
+            const infoHKD = trichXuatHKD(bc);
+            const infoVol = trichXuatVolIn(bc);
+            const infoCD = trichXuatDealDoanhSo(bc, ['CD', 'Deal CD', 'Cho vay', 'Tin dung']);
+            const infoTD = trichXuatDealDoanhSo(bc, ['TD', 'Deal TD', 'Tiết kiệm', 'Tiet kiem']);
+            const infoPNT = trichXuatDealDoanhSo(bc, ['Banca Non Life', 'Banca Nonlife', 'Banca phi nhân thọ', 'Phi nhân thọ', 'Banca PNT', 'PNT', 'Non Life', 'Nonlife', 'Banca', 'Deal PNT']);
+            const infoShopcash = trichXuatDealDoanhSo(bc, ['Shopcash', 'Shop cash']);
+
+            // Nếu nhân viên báo cáo deal tự do (như "27đ, 1 deal", "1 deal 27đ"...) gán vào Banca Non Life (PNT)
+            if (infoPNT.deal === 0 && infoCD.deal === 0 && infoTD.deal === 0 && infoShopcash.deal === 0) {
+                const genericDeal = trichXuatDealDoanhSo(bc, ['Deal', 'Báo cáo deal', '']);
+                if (genericDeal.deal > 0 || genericDeal.doanhSo > 0) {
+                    infoPNT.deal = genericDeal.deal;
+                    infoPNT.doanhSo = genericDeal.doanhSo;
+                    infoPNT.doanhSoRaw = genericDeal.doanhSoRaw;
+                }
+            }
+
+            let mtd = trichXuatSoLieu(bc, 'MTD MC');
+            if ((nv.trangThai === 'Off' || infoMC.tongMC === 0) && mtd === 0 && baoCaoLichSuGanNhat) {
                 const nvLichSu = banDoLichSu.get(nv.ten);
                 mtd = nvLichSu ? (nvLichSu.mtdMC || 0) : 0;
             }
@@ -253,109 +312,184 @@ $(function() {
             if (nv.trangThai === 'Off') {
                 const matchLyDo = bc.match(/^Fos\s+\S+\s+(.*)$/i);
                 const lyDo = (matchLyDo && matchLyDo[1] && matchLyDo[1].toUpperCase() !== 'OFF') ? matchLyDo[1] : 'OFF';
-                dsChiTiet.push(`${bieuTuong}${nv.ten}: ${lyDo}/${mtd}/${nv.chiTieu}`);
+                dsChiTiet.push(`${bieuTuong}${nv.ten}: ${lyDo} (MTD: ${mtd}/${nv.chiTieu})`);
             } else {
-                nvActive++;
-                tMC += mcNay; tNTB += ntb; tETB += etb;
-                tPos += trichXuatSoLieu(bc, 'Pos'); tAE += trichXuatSoLieu(bc, ['AE+', 'AE Plus']);
-                tTKHKD += trichXuatSoLieu(bc, ['Tài khoản hộ kinh doanh', 'TK HKD', 'HKD']);
-                tTShop += trichXuatSoLieu(bc, 'TShop');
-                dsChiTiet.push(`${bieuTuong}${nv.ten}: ${mcNay}/${mtd}/${nv.chiTieu}`);
+                nvTrienKhai++;
+                tongTuongTac += trichXuatSoLieu(bc, ['Số lượng tương tác', 'Số tương tác', 'Tương tác', 'Tuong tac', 'TT']);
+                tongGap += trichXuatSoLieu(bc, ['Số lượng gặp', 'Gặp', 'Gap', 'Số gặp']);
+                
+                tongMC += infoMC.tongMC;
+                tongNTB += infoMC.ntb;
+                tongETB += infoMC.etb;
+
+                tongHKD += infoHKD.tongHKD;
+                hkdNTB += infoHKD.ntb;
+                hkdETB += infoHKD.etb;
+
+                tongReactive += trichXuatSoLieu(bc, ['SL MC Reactive', 'Số lượng MC Reactive', 'MC Reactive', 'MCREACTIVE', 'Reactive']);
+                tongCashIn += trichXuatSoLieu(bc, ['Số lượng Cash in mới', 'Số lượng Cash in', 'Cash in mới', 'Cash in moi', 'Cash in', 'Cashin']);
+                
+                if (infoVol.so > 0) {
+                    tongVolInSo += infoVol.so;
+                } else if (infoVol.raw && infoVol.raw !== '0') {
+                    volInRaws.push(infoVol.raw);
+                }
+
+                cdDeal += infoCD.deal;
+                cdDoanhSo += infoCD.doanhSo;
+
+                tdDeal += infoTD.deal;
+                tdDoanhSo += infoTD.doanhSo;
+
+                tongShopdeals += trichXuatSoLieu(bc, ['Shopdeals', 'Shop deals', 'Shopdeal', 'Shop deal']);
+                tongPOS += trichXuatSoLieu(bc, ['POS', 'Pos', 'pos']);
+
+                pntDeal += infoPNT.deal;
+                pntDoanhSo += infoPNT.doanhSo;
+
+                shopcashDeal += infoShopcash.deal;
+                shopcashDoanhSo += infoShopcash.doanhSo;
+
+                let pntDetail = infoPNT.deal > 0 ? ` | PNT: ${infoPNT.deal} deal (${dinhDangDoanhSo(infoPNT.doanhSo, infoPNT.doanhSoRaw)})` : '';
+                let cdDetail = infoCD.deal > 0 ? ` | CD: ${infoCD.deal} deal (${dinhDangDoanhSo(infoCD.doanhSo, infoCD.doanhSoRaw)})` : '';
+                dsChiTiet.push(`${bieuTuong}${nv.ten}: ${infoMC.tongMC} MC (${infoMC.ntb} NTB, ${infoMC.etb} ETB) | HKD: ${infoHKD.tongHKD} | MTD: ${mtd}/${nv.chiTieu}${pntDetail}${cdDetail}`);
             }
         });
 
-        const nsbqNTB = (nvActive > 0) ? (tNTB / nvActive).toFixed(2) : '0.00';
-        const nsbqETB = (nvActive > 0) ? (tETB / nvActive).toFixed(2) : '0.00';
-        let ketQua = `${quanLy} ngày ${ngayHienThi}\n🔥${nvActive} FOS – ${tMC} MC\n✅NTB: ${tNTB}\n✅NSBQ NTB: ${nsbqNTB}\n✅ETB: ${tETB}\n✅NSBQ ETB: ${nsbqETB}\n✅AE+: ${tAE}\n✅Pos: ${tPos}/${danhSachNhanVien.length * 3}\n✅TK HKD: ${tTKHKD}\n✅TShop: ${tTShop}\n\n⭐️Active ${nvActive}/${danhSachNhanVien.length}\n${dsChiTiet.join('\n')}`;
+        const cdDoanhSoStr = dinhDangDoanhSo(cdDoanhSo, '0');
+        const tdDoanhSoStr = dinhDangDoanhSo(tdDoanhSo, '0');
+        const pntDoanhSoStr = dinhDangDoanhSo(pntDoanhSo, '0');
+        const shopcashDoanhSoStr = dinhDangDoanhSo(shopcashDoanhSo, '0');
+
+        let volInDisplay = '0';
+        if (tongVolInSo > 0) {
+            volInDisplay = dinhDangDoanhSo(tongVolInSo);
+        } else if (volInRaws.length > 0) {
+            volInDisplay = volInRaws.join(' + ');
+        }
+
+        // Format Báo cáo tổng hợp theo đúng mẫu người dùng yêu cầu:
+        let ketQua = `Triển khai MC Day: ${trienKhaiMCDay} - Chi nhánh: ${chiNhanh}\n`;
+        ketQua += `Số lượng nhân sự: ${tongSoNhanSu}\n`;
+        ketQua += `Số lượng nhân sự triển khai: ${nvTrienKhai}\n\n`;
+
+        ketQua += `- Số lượng tương tác: ${tongTuongTac}\n`;
+        ketQua += `- Số lượng gặp: ${tongGap}\n`;
+        ketQua += `- Số lượng MC: ${tongNTB} NTB, ${tongETB} ETB\n`;
+        ketQua += `- Số lượng HKD: ${hkdNTB} NTB ${hkdETB} ETB (${tongHKD} HKD)\n`;
+        ketQua += `- SL MC Reactive: ${tongReactive}\n`;
+        ketQua += `- Số lượng Cash in mới: ${tongCashIn}\n`;
+        ketQua += `- Số lượng Vol In mới: ${volInDisplay}\n\n`;
+
+        ketQua += `* Deal\n`;
+        ketQua += `- CD : ${cdDeal} deal/${cdDoanhSoStr}\n`;
+        ketQua += `- TD : ${tdDeal} Deal/${tdDoanhSoStr}\n`;
+        ketQua += `- Shopdeals: ${tongShopdeals}\n`;
+        ketQua += `- POS: ${tongPOS}\n`;
+        ketQua += `- Banca Non Life: ${pntDeal} Deal/${pntDoanhSoStr}\n`;
+        ketQua += `- Shopcash: ${shopcashDeal} Deal/${shopcashDoanhSoStr}`;
+
         $('#vung-ket-qua-bao-cao').val(ketQua);
 
-        // --- TẠO BÁO CÁO FORMAT 2 (MỚI) ---
-        const ngayThangHienThi = (() => {
-            const n = new Date();
-            const d = String(n.getDate()).padStart(2, '0');
-            const m = String(n.getMonth() + 1).padStart(2, '0');
-            return `${d}/${m}`;
-        })();
-        
-        const a = (nvActive > 0) ? (Math.floor((tMC / nvActive) * 100) / 100).toFixed(2) : '0.00';
-        const b = (nvActive > 0) ? (Math.floor((tTKHKD / nvActive) * 100) / 100).toFixed(2) : '0.00';
-        const c = (nvActive > 0) ? (Math.floor((tTShop / nvActive) * 100) / 100).toFixed(2) : '0.00';
-        
-        let ketQua2 = `Ngày ${ngayThangHienThi}\n`;
-        ketQua2 += `${quanLy} - SL FOS: ${nvActive}\n`;
-        ketQua2 += `❣️MC ETB+NTB: ${a}/${nvActive}\n`;
-        ketQua2 += `🌶️CA HKD: ${b}/${nvActive}\n`;
-        ketQua2 += `❤️🔥T-Shop: ${c}/${nvActive}\n`;
-        ketQua2 += `🥦Auto Bill: 0/0\n`;
-        ketQua2 += `🥕Loyalty: 0/0\n`;
-        ketQua2 += `CD: 0`;
-        
+        // Box 2: Chi tiết nhân sự
+        let ketQua2 = `Chi tiết nhân sự ngày ${dinhDangNgayHienThi(new Date())} (${nvTrienKhai}/${tongSoNhanSu} FOS):\n`;
+        ketQua2 += dsChiTiet.join('\n');
         $('#vung-ket-qua-bao-cao-2').val(ketQua2);
-        
+
         if (!chiXem) {
-            const thongKe = { tongFOS: danhSachNhanVien.length, tongMC: tMC, tongNTB: tNTB, nsbqNTB, tongETB: tETB, nsbqETB, tongPosThucHien: tPos, posChiTieu: danhSachNhanVien.length * 3, activeFOS: nvActive, tongAEPlus: tAE, tongTKHKD: tTKHKD, tongTShop: tTShop };
+            const thongKe = {
+                trienKhaiMCDay,
+                chiNhanh,
+                soLuongNhanSu: tongSoNhanSu,
+                soLuongTrienKhai: nvTrienKhai,
+                tongFOS: tongSoNhanSu,
+                activeFOS: nvTrienKhai,
+                tongTuongTac,
+                tongGap,
+                tongMC,
+                tongNTB,
+                tongETB,
+                tongHKD,
+                hkdNTB,
+                hkdETB,
+                tongReactive,
+                tongCashIn,
+                tongVolInSo,
+                tongVolInStr: volInDisplay,
+                cdDeal,
+                cdDoanhSo,
+                cdDoanhSoStr,
+                tdDeal,
+                tdDoanhSo,
+                tdDoanhSoStr,
+                tongShopdeals,
+                tongPOS,
+                pntDeal,
+                pntDoanhSo,
+                pntDoanhSoStr,
+                shopcashDeal,
+                shopcashDoanhSo,
+                shopcashDoanhSoStr,
+                nsbqNTB: (nvTrienKhai > 0 ? (tongNTB / nvTrienKhai).toFixed(2) : '0.00'),
+                nsbqETB: (nvTrienKhai > 0 ? (tongETB / nvTrienKhai).toFixed(2) : '0.00'),
+                posChiTieu: tongSoNhanSu * 3,
+                tongPosThucHien: tongPOS
+            };
             luuBaoCaoLenServer(taoCauTrucGuiBaoCao(danhSachNhanVien, baoCaoLichSuGanNhat, thongKe), true);
         }
     };
 
     // --- HELPER TẠO BÁO CÁO TỪ DB OBJECT ---
     const taiTaoNoiDungBaoCao = (bc) => {
-        const ngayHienThi = dinhDangNgayHienThi(bc.ngayBaoCao);
-        const thongKe = bc.tongKetToanDoi;
-        const dsNv = bc.baoCaoFOS;
-        const quanLy = 'TNH'; // Tên quản lý mặc định
-        
-        // Tái tạo phần Header
-        let ketQua = `${quanLy} ngày ${ngayHienThi}\n`;
-        
-        if (thongKe) {
-            const tMC = thongKe.tongSoMC || 0;
-            const tFOS = thongKe.tongSoFOS || 0;
-            const tNTB = thongKe.tongSoNTB || 0;
-            const nsbqNTB = (thongKe.NSBQ_NTB !== undefined && thongKe.NSBQ_NTB !== null) ? Number(thongKe.NSBQ_NTB).toFixed(2) : '0.00';
-            const tETB = thongKe.tongSoETB || 0;
-            const nsbqETB = (thongKe.NSBQ_ETB !== undefined && thongKe.NSBQ_ETB !== null) ? Number(thongKe.NSBQ_ETB).toFixed(2) : '0.00';
-            const tAE = thongKe.tongSoAEPlus || 0;
-            const tPos = thongKe.tyLePOS || "0/0";
-            const tTKHKD = thongKe.tongSoTKHKD || 0;
-            const tTShop = thongKe.tongSoTShop || 0;
-            const tActive = thongKe.tyLeActiveFOS || "0/0";
+        const thongKe = bc.tongKetToanDoi || {};
+        const trienKhai = thongKe.trienKhaiMCDay || 'Có';
+        const chiNhanh = thongKe.chiNhanh || 'TNH';
+        const tongSoNhanSu = thongKe.soLuongNhanSu || thongKe.tongSoFOS || (bc.baoCaoFOS ? bc.baoCaoFOS.length : 0);
+        const nhanSuTrienKhai = thongKe.soLuongTrienKhai || (thongKe.tyLeActiveFOS ? parseInt(thongKe.tyLeActiveFOS.split('/')[0]) : tongSoNhanSu);
 
-            ketQua += `🔥${tFOS} FOS – ${tMC} MC\n`;
-            ketQua += `✅NTB: ${tNTB}\n`;
-            ketQua += `✅NSBQ NTB: ${nsbqNTB}\n`;
-            ketQua += `✅ETB: ${tETB}\n`;
-            ketQua += `✅NSBQ ETB: ${nsbqETB}\n`;
-            ketQua += `✅AE+: ${tAE}\n`;
-            ketQua += `✅Pos: ${tPos}\n`;
-            ketQua += `✅TK HKD: ${tTKHKD}\n`;
-            ketQua += `✅TShop: ${tTShop}\n\n`;
-            ketQua += `⭐️Active ${tActive}\n`;
-        }
+        const tongTuongTac = thongKe.tongTuongTac || 0;
+        const tongGap = thongKe.tongGap || 0;
+        const tongMC = thongKe.tongMC || thongKe.tongSoMC || 0;
+        const tongNTB = thongKe.tongNTB || thongKe.tongSoNTB || 0;
+        const tongETB = thongKe.tongETB || thongKe.tongSoETB || 0;
+        const tongHKD = thongKe.tongHKD || thongKe.tongSoTKHKD || 0;
+        const hkdNTB = thongKe.hkdNTB || 0;
+        const hkdETB = thongKe.hkdETB || 0;
+        const tongReactive = thongKe.tongReactive || 0;
+        const tongCashIn = thongKe.tongCashIn || 0;
+        const volInDisplay = thongKe.tongVolInStr || (thongKe.tongVolInSo ? dinhDangDoanhSo(thongKe.tongVolInSo) : '0');
 
-        // Tái tạo danh sách nhân viên
-        if (dsNv && dsNv.length > 0) {
-            dsNv.forEach(n => {
-                 // Tìm nhân viên trong danh sách hiện tại để lấy giới tính (icon)
-                 const nvHienTai = danhSachNhanVien.find(nv => nv.ten === n.tenNhanVien);
-                 // Mặc định icon Nam nếu không tìm thấy hoặc chưa load
-                 const icon = nvHienTai ? (nvHienTai.gioiTinh === 'Nữ' ? '👵' : '👨') : '👨';
-                 
-                 const sale = n.chiSoHieuSuat?.saleHomNay || 0;
-                 const mtd = n.chiSoHieuSuat?.saleTrongThang || 0;
-                 const chiTieu = n.chiSoHieuSuat?.chiTieu || 0;
-                 
-                 let statusStr = `${sale}/${mtd}/${chiTieu}`;
-                 
-                 // Xử lý logic hiển thị OFF (tương tự như thucHienTaoBaoCao)
-                 if (n.OFF && n.OFF !== 0 && n.OFF !== '0') {
-                     const lyDo = (n.OFF === 1 || n.OFF === '1') ? 'OFF' : n.OFF;
-                     statusStr = `${lyDo}/${mtd}/${chiTieu}`;
-                 }
-                 
-                 ketQua += `${icon}${n.tenNhanVien}: ${statusStr}\n`;
-            });
-        }
+        const cdDeal = thongKe.cdDeal || 0;
+        const cdDoanhSoStr = thongKe.cdDoanhSoStr || (thongKe.cdDoanhSo ? dinhDangDoanhSo(thongKe.cdDoanhSo) : '0');
+        const tdDeal = thongKe.tdDeal || 0;
+        const tdDoanhSoStr = thongKe.tdDoanhSoStr || (thongKe.tdDoanhSo ? dinhDangDoanhSo(thongKe.tdDoanhSo) : '0');
+        const tongShopdeals = thongKe.tongShopdeals || thongKe.tongSoTShop || 0;
+        const tongPOS = thongKe.tongPOS || (thongKe.tyLePOS ? parseInt(thongKe.tyLePOS.split('/')[0]) : 0);
+        const pntDeal = thongKe.pntDeal || 0;
+        const pntDoanhSoStr = thongKe.pntDoanhSoStr || (thongKe.pntDoanhSo ? dinhDangDoanhSo(thongKe.pntDoanhSo) : '0');
+        const shopcashDeal = thongKe.shopcashDeal || 0;
+        const shopcashDoanhSoStr = thongKe.shopcashDoanhSoStr || (thongKe.shopcashDoanhSo ? dinhDangDoanhSo(thongKe.shopcashDoanhSo) : '0');
+
+        let ketQua = `Triển khai MC Day: ${trienKhai} - Chi nhánh: ${chiNhanh}\n`;
+        ketQua += `Số lượng nhân sự: ${tongSoNhanSu}\n`;
+        ketQua += `Số lượng nhân sự triển khai: ${nhanSuTrienKhai}\n\n`;
+
+        ketQua += `- Số lượng tương tác: ${tongTuongTac}\n`;
+        ketQua += `- Số lượng gặp: ${tongGap}\n`;
+        ketQua += `- Số lượng MC: ${tongNTB} NTB, ${tongETB} ETB\n`;
+        ketQua += `- Số lượng HKD: ${hkdNTB} NTB ${hkdETB} ETB (${tongHKD} HKD)\n`;
+        ketQua += `- SL MC Reactive: ${tongReactive}\n`;
+        ketQua += `- Số lượng Cash in mới: ${tongCashIn}\n`;
+        ketQua += `- Số lượng Vol In mới: ${volInDisplay}\n\n`;
+
+        ketQua += `* Deal\n`;
+        ketQua += `- CD : ${cdDeal} deal/${cdDoanhSoStr}\n`;
+        ketQua += `- TD : ${tdDeal} Deal/${tdDoanhSoStr}\n`;
+        ketQua += `- Shopdeals: ${tongShopdeals}\n`;
+        ketQua += `- POS: ${tongPOS}\n`;
+        ketQua += `- Banca Non Life: ${pntDeal} Deal/${pntDoanhSoStr}\n`;
+        ketQua += `- Shopcash: ${shopcashDeal} Deal/${shopcashDoanhSoStr}`;
+
         return ketQua;
     };
     
@@ -411,11 +545,43 @@ $(function() {
         nhanVienHienTai = $(this).data('nv-ten');
         const nv = danhSachNhanVien.find(n => n.ten === nhanVienHienTai);
         if (nv) {
-            const bc = nv.baoCao;
-            $('#tieu-de-modal-sua-bao-cao').text(`Sửa nhanh: ${nhanVienHienTai}`);
-            $('#ntb-sua').val(trichXuatSoLieu(bc, 'NTB')); $('#etb-sua').val(trichXuatSoLieu(bc, 'ETB'));
-            $('#pos-sua').val(trichXuatSoLieu(bc, 'Pos')); $('#aeplus-sua').val(trichXuatSoLieu(bc, ['AE+', 'AE Plus']));
-            $('#tkhkd-sua').val(trichXuatSoLieu(bc, ['Tài khoản hộ kinh doanh', 'TK HKD', 'HKD'])); $('#tshop-sua').val(trichXuatSoLieu(bc, 'TShop'));
+            const bc = nv.baoCao || '';
+            $('#tieu-de-modal-sua-bao-cao').text(`Sửa báo cáo: ${nhanVienHienTai}`);
+            
+            const mc = trichXuatMC(bc);
+            const hkd = trichXuatHKD(bc);
+            const vol = trichXuatVolIn(bc);
+            const cd = trichXuatDealDoanhSo(bc, ['CD', 'Deal CD', 'Cho vay', 'Tin dung']);
+            const td = trichXuatDealDoanhSo(bc, ['TD', 'Deal TD', 'Tiết kiệm', 'Tiet kiem']);
+            const pnt = trichXuatDealDoanhSo(bc, ['Banca Non Life', 'Banca Nonlife', 'Banca phi nhân thọ', 'Phi nhân thọ', 'Banca PNT', 'PNT', 'Non Life', 'Nonlife']);
+            const shopcash = trichXuatDealDoanhSo(bc, ['Shopcash', 'Shop cash']);
+
+            $('#tuongtac-sua').val(trichXuatSoLieu(bc, ['Số lượng tương tác', 'Số tương tác', 'Tương tác', 'Tuong tac', 'TT']));
+            $('#gap-sua').val(trichXuatSoLieu(bc, ['Số lượng gặp', 'Gặp', 'Gap', 'Số gặp']));
+            $('#reactive-sua').val(trichXuatSoLieu(bc, ['SL MC Reactive', 'Số lượng MC Reactive', 'MC Reactive', 'MCREACTIVE', 'Reactive']));
+
+            $('#ntb-sua').val(mc.ntb);
+            $('#etb-sua').val(mc.etb);
+            $('#hkd-ntb-sua').val(hkd.ntb);
+            $('#hkd-etb-sua').val(hkd.etb);
+
+            $('#cashin-sua').val(trichXuatSoLieu(bc, ['Số lượng Cash in mới', 'Số lượng Cash in', 'Cash in mới', 'Cash in moi', 'Cash in', 'Cashin']));
+            $('#volin-sua').val(vol.raw || (vol.so > 0 ? vol.so : '0'));
+            $('#shopdeals-sua').val(trichXuatSoLieu(bc, ['Shopdeals', 'Shop deals', 'Shopdeal', 'Shop deal']));
+            $('#pos-sua').val(trichXuatSoLieu(bc, ['POS', 'Pos', 'pos']));
+
+            $('#pnt-deal-sua').val(pnt.deal);
+            $('#pnt-ds-sua').val(pnt.doanhSoRaw || (pnt.doanhSo > 0 ? pnt.doanhSo : '0'));
+
+            $('#cd-deal-sua').val(cd.deal);
+            $('#cd-ds-sua').val(cd.doanhSoRaw || (cd.doanhSo > 0 ? cd.doanhSo : '0'));
+
+            $('#shopcash-deal-sua').val(shopcash.deal);
+            $('#shopcash-ds-sua').val(shopcash.doanhSoRaw || (shopcash.doanhSo > 0 ? shopcash.doanhSo : '0'));
+
+            $('#td-deal-sua').val(td.deal);
+            $('#td-ds-sua').val(td.doanhSoRaw || (td.doanhSo > 0 ? td.doanhSo : '0'));
+
             $('#mtd-sua').val(trichXuatSoLieu(bc, 'MTD MC'));
             modalSuaBaoCao.show();
         }
@@ -424,9 +590,61 @@ $(function() {
     $('#nut-xac-nhan-sua-bao-cao').on('click', () => {
         const nv = danhSachNhanVien.find(n => n.ten === nhanVienHienTai);
         if (nv) {
-            const n = parseInt($('#ntb-sua').val()) || 0, e = parseInt($('#etb-sua').val()) || 0;
-            nv.baoCao = `Fos ${nv.ten}\nTổng MC: ${n+e}\nNTB: ${n}\nETB: ${e}\nAE+: ${$('#aeplus-sua').val() || 0}\nPos: ${$('#pos-sua').val() || 0}\nTK HKD: ${$('#tkhkd-sua').val() || 0}\nTShop: ${$('#tshop-sua').val() || 0}\nMTD MC: ${$('#mtd-sua').val() || 0}`;
-            nv.trangThai = 'Đã báo cáo'; hienThiDanhSachNhanVien(); luuVaoBoNhoTam(); modalSuaBaoCao.hide();
+            const tuongTac = parseInt($('#tuongtac-sua').val()) || 0;
+            const gap = parseInt($('#gap-sua').val()) || 0;
+            const reactive = parseInt($('#reactive-sua').val()) || 0;
+
+            const ntb = parseInt($('#ntb-sua').val()) || 0;
+            const etb = parseInt($('#etb-sua').val()) || 0;
+            const tongMC = ntb + etb;
+
+            const hkdNTB = parseInt($('#hkd-ntb-sua').val()) || 0;
+            const hkdETB = parseInt($('#hkd-etb-sua').val()) || 0;
+            const tongHKD = hkdNTB + hkdETB;
+
+            const cashIn = parseInt($('#cashin-sua').val()) || 0;
+            const volIn = $('#volin-sua').val().trim() || '0';
+            const shopdeals = parseInt($('#shopdeals-sua').val()) || 0;
+            const pos = parseInt($('#pos-sua').val()) || 0;
+
+            const pntDeal = parseInt($('#pnt-deal-sua').val()) || 0;
+            const pntDS = $('#pnt-ds-sua').val().trim() || '0';
+
+            const cdDeal = parseInt($('#cd-deal-sua').val()) || 0;
+            const cdDS = $('#cd-ds-sua').val().trim() || '0';
+
+            const shopcashDeal = parseInt($('#shopcash-deal-sua').val()) || 0;
+            const shopcashDS = $('#shopcash-ds-sua').val().trim() || '0';
+
+            const tdDeal = parseInt($('#td-deal-sua').val()) || 0;
+            const tdDS = $('#td-ds-sua').val().trim() || '0';
+
+            const mtd = parseInt($('#mtd-sua').val()) || 0;
+
+            let lines = [
+                `Fos ${nv.ten}`,
+                `- Số lượng tương tác: ${tuongTac}`,
+                `- Số lượng gặp: ${gap}`,
+                `- Số lượng MC: ${ntb} NTB, ${etb} ETB`,
+                `- Số lượng HKD: ${hkdNTB} NTB ${hkdETB} ETB (${tongHKD} HKD)`,
+                `- SL MC Reactive: ${reactive}`,
+                `- Số lượng Cash in mới: ${cashIn}`,
+                `- Số lượng Vol In mới: ${volIn}`,
+                `* Deal`,
+                `- CD : ${cdDeal} deal/${cdDS}`,
+                `- TD : ${tdDeal} Deal/${tdDS}`,
+                `- Shopdeals: ${shopdeals}`,
+                `- POS: ${pos}`,
+                `- Banca Non Life: ${pntDeal} Deal/${pntDS}`,
+                `- Shopcash: ${shopcashDeal} Deal/${shopcashDS}`,
+                `MTD MC: ${mtd}`
+            ];
+
+            nv.baoCao = lines.join('\n');
+            nv.trangThai = 'Đã báo cáo';
+            hienThiDanhSachNhanVien();
+            luuVaoBoNhoTam();
+            modalSuaBaoCao.hide();
         }
     });
 
@@ -479,7 +697,7 @@ $(function() {
     $('#nut-sao-chep').on('click', function() {
         const $btn = $(this);
         navigator.clipboard.writeText($('#vung-ket-qua-bao-cao').val()).then(() => {
-            hienThiThongBao('Đã sao chép báo cáo 1!');
+            hienThiThongBao('Đã sao chép báo cáo tổng hợp!');
             $btn.html('<i class="fa-solid fa-check"></i> Đã chép').addClass('btn-success').removeClass('btn-primary');
             setTimeout(() => $btn.html('<i class="fa-regular fa-copy"></i> Sao chép').removeClass('btn-success').addClass('btn-primary'), 2000);
         });
@@ -488,7 +706,7 @@ $(function() {
     $('#nut-sao-chep-2').on('click', function() {
         const $btn = $(this);
         navigator.clipboard.writeText($('#vung-ket-qua-bao-cao-2').val()).then(() => {
-            hienThiThongBao('Đã sao chép báo cáo hiệu suất!');
+            hienThiThongBao('Đã sao chép chi tiết nhân sự!');
             $btn.html('<i class="fa-solid fa-check"></i> Đã chép').addClass('btn-success').removeClass('btn-outline-primary');
             setTimeout(() => $btn.html('<i class="fa-regular fa-copy"></i> Sao chép').removeClass('btn-success').addClass('btn-outline-primary'), 2000);
         });
@@ -499,18 +717,23 @@ $(function() {
         hienThiTaiTrang("Đang tải báo cáo cũ...");
         try {
             const homNayStr = dinhDangNgayISO(new Date());
-            // Lấy báo cáo có ngày < ngày hôm nay, sắp xếp giảm dần, lấy 1
-            const truyVan = `q={"ngayBaoCao": {"$lt": "${homNayStr}"}}&h={"$orderby": {"ngayBaoCao": -1}}&max=1`;
-            const duLieu = await thucHienGoiApi(`report?${truyVan}`);
+            // Lấy báo cáo ngày gần nhất (nhỏ hơn ngày hôm nay)
+            const q = encodeURIComponent(JSON.stringify({ "ngayBaoCao": { "$lt": homNayStr } }));
+            const h = encodeURIComponent(JSON.stringify({ "$orderby": { "ngayBaoCao": -1 } }));
             
-            if (duLieu.length > 0) {
-                $('#vung-ket-qua-bao-cao-cu').val(taiTaoNoiDungBaoCao(duLieu[0]));
+            const duLieu = await thucHienGoiApi(`report?q=${q}&h=${h}&max=1`);
+            
+            if (duLieu && Array.isArray(duLieu) && duLieu.length > 0) {
+                const reportContent = taiTaoNoiDungBaoCao(duLieu[0]);
+                $('#vung-ket-qua-bao-cao-cu').val(reportContent);
+                $('#modal-xem-bao-cao-cu .modal-title').text(`Báo cáo ngày gần nhất (${dinhDangNgayHienThi(duLieu[0].ngayBaoCao)})`);
+                modalXemBaoCaoCu.show();
             } else {
-                $('#vung-ket-qua-bao-cao-cu').val("Không tìm thấy dữ liệu báo cáo trước ngày hôm nay.");
+                hienThiThongBao("Không tìm thấy dữ liệu báo cáo lịch sử nào.", "info");
             }
-            modalXemBaoCaoCu.show();
         } catch (e) {
             hienThiThongBao("Lỗi tải lịch sử: " + e.message, "error");
+            console.error("Lỗi khi tải báo cáo lịch sử:", e);
         } finally {
             anTaiTrang();
         }

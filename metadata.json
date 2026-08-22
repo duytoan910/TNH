@@ -1,5 +1,6 @@
 {
   "name": "Daily Report Generator v1.5.0",
   "description": "Hệ thống tổng hợp báo cáo kinh doanh chuyên nghiệp dành cho đội ngũ FOS.",
-  "requestFramePermissions": []
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

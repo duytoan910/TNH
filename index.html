@@ -146,6 +146,24 @@
         <div class="row g-4">
             <!-- Cột nhập liệu -->
             <div class="col-lg-6">
+                <!-- Cấu hình MC Day -->
+                <div class="card border-0 shadow-sm mb-3" style="background: var(--bg-card); border-radius: var(--card-radius);">
+                    <div class="card-body p-3">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <label class="form-label mb-0 fw-semibold small text-secondary">
+                                <i class="fa-solid fa-calendar-check text-primary me-1"></i> Triển khai MC Day:
+                            </label>
+                            <div class="btn-group" role="group" id="nhom-mc-day" style="width: 180px;">
+                                <input type="radio" class="btn-check" name="opt-mc-day" id="mc-day-co" value="Có" checked autocomplete="off">
+                                <label class="btn btn-outline-primary btn-sm fw-medium" for="mc-day-co"><i class="fa-solid fa-check me-1"></i>Có</label>
+
+                                <input type="radio" class="btn-check" name="opt-mc-day" id="mc-day-khong" value="Không" autocomplete="off">
+                                <label class="btn btn-outline-secondary btn-sm fw-medium" for="mc-day-khong"><i class="fa-solid fa-xmark me-1"></i>Không</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="d-flex justify-content-between align-items-center mb-1">
                     <h3 class="mb-0 fs-5">1. Danh sách Nhân Viên</h3>
                     <div>
@@ -180,14 +198,14 @@
                                 </button>
                             </div>
                         </div>
-                        <textarea id="vung-ket-qua-bao-cao" class="form-control" rows="12" style="font-family: 'Courier New', Courier, monospace; font-size: 0.9rem;"></textarea>
+                        <textarea id="vung-ket-qua-bao-cao" class="form-control" rows="16" style="font-family: 'Courier New', Courier, monospace; font-size: 0.9rem;"></textarea>
                     </div>
                 </div>
 
                 <div class="card border-0 shadow-sm mt-3">
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-center mb-2">
-                             <h5 class="card-title mb-0">Báo cáo hiệu suất (Format mới)</h5>
+                             <h5 class="card-title mb-0">Chi tiết nhân sự (FOS)</h5>
                             <div class="d-flex flex-shrink-0">
                                 <button id="nut-sao-chep-2" class="btn btn-sm btn-outline-primary">
                                     <i class="fa-regular fa-copy"></i> Sao chép
@@ -248,37 +266,116 @@
           </div>
           <div class="modal-body">
             <form id="bieu-mau-sua-bao-cao">
-                <div class="row g-3">
-                    <div class="col-6">
-                        <div class="mb-3">
-                            <label for="ntb-sua" class="form-label">NTB</label>
-                            <input type="number" class="form-control" id="ntb-sua" min="0">
+                <!-- Nhóm 1: Hoạt động tiếp cận -->
+                <div class="border rounded p-3 mb-3 bg-light-subtle">
+                    <h6 class="fw-bold text-primary mb-2"><i class="fa-solid fa-users-viewfinder me-1"></i> Hoạt động tiếp cận</h6>
+                    <div class="row g-2">
+                        <div class="col-md-4">
+                            <label for="tuongtac-sua" class="form-label small mb-1">Số lượng tương tác</label>
+                            <input type="number" class="form-control form-control-sm" id="tuongtac-sua" min="0" placeholder="0">
                         </div>
-                        <div class="mb-3">
-                            <label for="etb-sua" class="form-label">ETB</label>
-                            <input type="number" class="form-control" id="etb-sua" min="0">
+                        <div class="col-md-4">
+                            <label for="gap-sua" class="form-label small mb-1">Số lượng gặp</label>
+                            <input type="number" class="form-control form-control-sm" id="gap-sua" min="0" placeholder="0">
                         </div>
-                        <div class="mb-3">
-                            <label for="aeplus-sua" class="form-label fw-bold text-primary">AE+</label>
-                            <input type="number" class="form-control" id="aeplus-sua" min="0">
+                        <div class="col-md-4">
+                            <label for="reactive-sua" class="form-label small mb-1">SL MC Reactive</label>
+                            <input type="number" class="form-control form-control-sm" id="reactive-sua" min="0" placeholder="0">
                         </div>
                     </div>
-                    <div class="col-6">
-                        <div class="mb-3">
-                            <label for="pos-sua" class="form-label">Pos</label>
-                            <input type="number" class="form-control" id="pos-sua" min="0">
+                </div>
+
+                <!-- Nhóm 2: Khách hàng MC & HKD -->
+                <div class="border rounded p-3 mb-3 bg-light-subtle">
+                    <h6 class="fw-bold text-success mb-2"><i class="fa-solid fa-address-card me-1"></i> Số lượng MC & Hộ Kinh Doanh (HKD)</h6>
+                    <div class="row g-2">
+                        <div class="col-6 col-md-3">
+                            <label for="ntb-sua" class="form-label small mb-1">MC NTB</label>
+                            <input type="number" class="form-control form-control-sm" id="ntb-sua" min="0" placeholder="0">
                         </div>
-                        <div class="mb-3">
-                            <label for="tkhkd-sua" class="form-label" title="Tài khoản hộ kinh doanh">TK HKD</label>
-                            <input type="number" class="form-control" id="tkhkd-sua" min="0">
+                        <div class="col-6 col-md-3">
+                            <label for="etb-sua" class="form-label small mb-1">MC ETB</label>
+                            <input type="number" class="form-control form-control-sm" id="etb-sua" min="0" placeholder="0">
                         </div>
-                        <div class="mb-3">
-                            <label for="tshop-sua" class="form-label">TShop</label>
-                            <input type="number" class="form-control" id="tshop-sua" min="0">
+                        <div class="col-6 col-md-3">
+                            <label for="hkd-ntb-sua" class="form-label small mb-1">HKD NTB</label>
+                            <input type="number" class="form-control form-control-sm" id="hkd-ntb-sua" min="0" placeholder="0">
                         </div>
-                         <div class="mb-3">
-                            <label for="mtd-sua" class="form-label fw-bold" title="MTD MC">MTD MC (Tháng)</label>
-                            <input type="number" class="form-control" id="mtd-sua" min="0">
+                        <div class="col-6 col-md-3">
+                            <label for="hkd-etb-sua" class="form-label small mb-1">HKD ETB</label>
+                            <input type="number" class="form-control form-control-sm" id="hkd-etb-sua" min="0" placeholder="0">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Nhóm 3: Dòng tiền & Điểm bán -->
+                <div class="border rounded p-3 mb-3 bg-light-subtle">
+                    <h6 class="fw-bold text-info mb-2"><i class="fa-solid fa-money-bill-transfer me-1"></i> Dòng tiền & Điểm bán</h6>
+                    <div class="row g-2">
+                        <div class="col-6 col-md-3">
+                            <label for="cashin-sua" class="form-label small mb-1">Cash in mới</label>
+                            <input type="number" class="form-control form-control-sm" id="cashin-sua" min="0" placeholder="0">
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <label for="volin-sua" class="form-label small mb-1">Vol In mới</label>
+                            <input type="text" class="form-control form-control-sm" id="volin-sua" placeholder="Ví dụ: 50tr hoặc 0">
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <label for="shopdeals-sua" class="form-label small mb-1">Shopdeals</label>
+                            <input type="number" class="form-control form-control-sm" id="shopdeals-sua" min="0" placeholder="0">
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <label for="pos-sua" class="form-label small mb-1">POS</label>
+                            <input type="number" class="form-control form-control-sm" id="pos-sua" min="0" placeholder="0">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Nhóm 4: Deal & Doanh số (PNT, CD, TD, Shopcash) -->
+                <div class="border rounded p-3 bg-light-subtle">
+                    <h6 class="fw-bold text-warning-emphasis mb-2"><i class="fa-solid fa-handshake me-1"></i> Deal & Doanh số</h6>
+                    <div class="row g-2">
+                        <!-- Banca Non Life (PNT) -->
+                        <div class="col-md-6 border-end pe-md-3">
+                            <label class="form-label small mb-1 fw-bold text-danger">Banca Non Life (PNT):</label>
+                            <div class="input-group input-group-sm mb-2">
+                                <span class="input-group-text">Deal</span>
+                                <input type="number" class="form-control" id="pnt-deal-sua" min="0" placeholder="0">
+                                <span class="input-group-text">DS</span>
+                                <input type="text" class="form-control" id="pnt-ds-sua" placeholder="VD: 2tr hoặc 0">
+                            </div>
+
+                            <label class="form-label small mb-1 fw-bold text-primary">CD (Cho vay):</label>
+                            <div class="input-group input-group-sm mb-2">
+                                <span class="input-group-text">Deal</span>
+                                <input type="number" class="form-control" id="cd-deal-sua" min="0" placeholder="0">
+                                <span class="input-group-text">DS</span>
+                                <input type="text" class="form-control" id="cd-ds-sua" placeholder="VD: 50tr hoặc 0">
+                            </div>
+                        </div>
+
+                        <!-- TD & Shopcash -->
+                        <div class="col-md-6 ps-md-3">
+                            <label class="form-label small mb-1 fw-bold text-success">Shopcash:</label>
+                            <div class="input-group input-group-sm mb-2">
+                                <span class="input-group-text">Deal</span>
+                                <input type="number" class="form-control" id="shopcash-deal-sua" min="0" placeholder="0">
+                                <span class="input-group-text">DS</span>
+                                <input type="text" class="form-control" id="shopcash-ds-sua" placeholder="VD: 20tr hoặc 0">
+                            </div>
+
+                            <label class="form-label small mb-1 fw-bold text-secondary">TD (Tiết kiệm):</label>
+                            <div class="input-group input-group-sm mb-2">
+                                <span class="input-group-text">Deal</span>
+                                <input type="number" class="form-control" id="td-deal-sua" min="0" placeholder="0">
+                                <span class="input-group-text">DS</span>
+                                <input type="text" class="form-control" id="td-ds-sua" placeholder="VD: 100tr hoặc 0">
+                            </div>
+
+                            <div class="mt-2">
+                                <label for="mtd-sua" class="form-label small mb-1 fw-bold">MTD MC (Lũy kế tháng)</label>
+                                <input type="number" class="form-control form-control-sm" id="mtd-sua" min="0" placeholder="0">
+                            </div>
                         </div>
                     </div>
                 </div>
